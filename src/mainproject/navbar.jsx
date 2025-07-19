@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
@@ -5,9 +6,9 @@ export default function Navbar() {
     <div className={styles.whole}>
       <div className={styles.sub}>
         <div className={styles.leftLinks}>
-          <a href="#" className={`${styles.navItem} ${styles.active}`}>Home</a>
-          <a href="#" className={styles.navItem}>Explore</a>
-          <a href="#" className={styles.navItem}>Post</a>
+          <Link to="/" className={`${styles.navItem} ${styles.active}`}>Home</Link>
+          <Link to="/explore" className={styles.navItem}>Explore</Link>
+          <Link to="/post" className={styles.navItem}>Post</Link>
         </div>
 
         <div className={styles.logo}>
@@ -16,9 +17,9 @@ export default function Navbar() {
         </div>
 
         <div className={styles.rightLinks}>
-          <a href="#" className={styles.navItem}>Premium hub</a>
-          <a href="#" className={styles.navItem}>Sign up</a>
-          <a href="#" className={styles.navItem}>login</a>
+          <Link to="/premium" className={styles.navItem}>Premium hub</Link>
+          <Link to="/signup" className={styles.navItem}>Sign up</Link>
+          <Link to="/login" className={styles.navItem}>Login</Link>
         </div>
       </div>
     </div>
