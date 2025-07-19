@@ -1,0 +1,111 @@
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafc;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-left {
+  flex: 1;
+  background: #e8f0fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-img {
+  max-width: 80%;
+  height: auto;
+}
+
+.login-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #ffffff;
+  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.login-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-form h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.login-form p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #3730a3;
+}
+
+.social-login p {
+  text-align: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.social-buttons button {
+  flex: 1;
+  padding: 10px;
+  margin: 4px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+  font-size: 14px;
+}
+
+.google {
+  background-color: #db4437;
+}
+
+.github {
+  background-color: #333;
+}
+
+.linkedin {
+  background-color: #0a66c2;
+}
+
+.switch-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
