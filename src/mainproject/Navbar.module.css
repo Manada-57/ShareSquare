@@ -3,7 +3,12 @@
   padding: 10px 40px;
   border-radius: 0 0 30px 30px;
   color: white;
- 
+ position: fixed;
+ width: 93.65%;
+ z-index: 1;
+  top:0;
+  align-self: center;
+  
 }
 
 .sub {
@@ -12,6 +17,7 @@
   align-items: center;
 
   margin: auto;
+  margin-left:40px;
 }
 
 .leftLinks,
