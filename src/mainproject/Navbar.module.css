@@ -3,6 +3,10 @@
   padding: 10px 40px;
   border-radius: 0 0 30px 30px;
   color: white;
+  position:fixed;
+  z-index: 10;
+  top: 0;
+  width: 95%
  
 }
 
