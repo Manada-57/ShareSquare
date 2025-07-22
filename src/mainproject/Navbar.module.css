@@ -3,6 +3,10 @@
   padding: 10px 40px;
   border-radius: 0 0 30px 30px;
   color: white;
+  z-index: 10;
+  position: relative;
+  top:0;
+width: 93.65%;
  
 }
 
@@ -11,8 +15,7 @@
   justify-content: space-between;
   align-items: center;
   margin-left:40px;
-
-  margin: auto;
+ margin: auto;
  
 }
 
