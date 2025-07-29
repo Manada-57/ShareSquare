@@ -3,6 +3,10 @@
   padding: 10px 40px;
   border-radius: 0 0 30px 30px;
   color: white;
+  position:fixed;
+  z-index: 10;
+  top: 0;
+  width: 93.65%
  
 }
 
@@ -13,7 +17,6 @@
   margin-left:40px;
 
   margin: auto;
- 
 }
 
 .leftLinks,
