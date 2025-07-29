@@ -3,18 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
-  "start": "concurrently \"npm run start-frontend\" \"npm run start-backend\"",
-  "start-frontend": "vite",
-  "start-backend": "node server.js",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview"
-},
+  "scripts": {
+    "start": "concurrently \"npm run start-frontend\" \"npm run start-backend\"",
+    "start-frontend": "vite",
+    "start-backend": "node server.js",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
+    "mongoose": "^8.16.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.7.0"
   },
   "devDependencies": {
