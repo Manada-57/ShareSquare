@@ -119,3 +119,42 @@
 .signup-form a:hover {
   text-decoration: underline;
 }
+
+/* Password checklist */
+.password-checklist {
+  margin-top: -10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.password-checklist div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.password-checklist .valid {
+  color: green;
+}
+
+.password-checklist .invalid {
+  color: #999;
+}
+
+.password-checklist i {
+  font-size: 16px;
+}
+
+/* Confirm Password success */
+input.confirm-match {
+  border-color: green;
+  box-shadow: 0 0 5px rgba(0, 128, 0, 0.3);
+}
+
+/* Tick mark style */
+.tick-mark {
+  font-weight: bold;
+  margin-left: auto;
+}
