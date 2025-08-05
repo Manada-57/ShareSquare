@@ -13,9 +13,7 @@ export default function feature() {
       {/* Right side content */}
       <div className={styles.featuretext}>
         <h2>
-          Making<br />
-          innovations<br />
-          <span className={styles.highlight}>for you</span>
+          Making <br></br> innovations <br></br><span className={styles.highlight}>for you</span>
         </h2>
 
         <div className={styles.featurebox}>

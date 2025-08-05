@@ -3,18 +3,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 60px 80px;
-  background-color: #f9f9f9;
+  padding-left: 70px;
+  padding-top: 40px;
   gap: 40px;
-  flex-wrap: wrap; /* makes it responsive on small screens */
+  flex-wrap: wrap;
+  top: 0;
+  padding-bottom: 20px;
+  /* Mild orange background */
+ background: linear-gradient(to bottom right, #e0f7fa, #f1f8e9);
 }
 
 .featureimage img {
   width: 100%;
   max-width: 500px;
-  height: auto;
+  height: 600px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
 }
 
 .featuretext {
@@ -26,11 +31,13 @@
   font-size: 36px;
   margin-bottom: 20px;
   line-height: 1.4;
+ 
 }
 
 .highlight {
   color: #007bff; /* or any brand color */
   font-weight: bold;
+  text-shadow: 1px 1px 1px #ff7a00;
 }
 
 .featurebox {
@@ -38,7 +45,7 @@
   padding: 20px 25px;
   margin-bottom: 20px;
   border-radius: 10px;
-  border-left: 4px solid #007bff;
+  border-left: 6px solid #007bff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
