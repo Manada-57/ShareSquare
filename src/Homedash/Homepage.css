@@ -1,0 +1,46 @@
+.home-container {
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.home-header {
+  background-color: #4e73df;
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logout-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.home-body {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.home-body h2 {
+  margin-bottom: 1rem;
+}
+
+.home-body ul {
+  list-style-type: square;
+  padding-left: 1.5rem;
+}
+
+.home-body li {
+  margin-bottom: 0.5rem;
+}

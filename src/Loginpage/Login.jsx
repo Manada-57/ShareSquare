@@ -1,12 +1,27 @@
 import React from 'react';
 import './Login.css';
-import { Link } from 'react-router-dom';
-import loginImage from '../assets/login.jpg'; // Replace with your image
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import loginImage from '../assets/login.jpg';
 
 const Login = () => {
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Login submitted (email verification would happen here)');
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+
+    try {
+      const res = await axios.post('http://localhost:5000/api/login',
+        { email, password });
+      if (res.status === 200) {
+        navigate('/home'); // Redirect on successful login
+      }
+    } catch (err) {
+      alert(err);
+      console.error(err);
+    }
   };
 
   return (
@@ -28,9 +43,15 @@ const Login = () => {
           <div className="social-login">
             <p>Or login with:</p>
             <div className="social-buttons">
-              <button className="google">Google</button>
-              <button className="github">GitHub</button>
-              <button className="linkedin">LinkedIn</button>
+              <a href="http://localhost:5000/auth/google">
+                <button type="button" className="google">Google</button>
+              </a>
+              <a href="http://localhost:5000/auth/github">
+                <button type="button" className="github">GitHub</button>
+              </a>
+              <a href="http://localhost:5000/auth/linkedin">
+                <button type="button" className="linkedin">LinkedIn</button>
+              </a>
             </div>
           </div>
 

@@ -11,11 +11,11 @@ import EndPage from "./mainproject/End.jsx";
 function App() {
   return (
     
-    <Routes>
+     { /* <Routes>
       <Route path="/" element={
         <>
         <title>sharesquare</title>
-            {/* Now only shown in home */}
+          
           <Hero />
           <Step />
           <Feature />
@@ -27,7 +27,8 @@ function App() {
       } />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-    </Routes>
+      <Route path="/home" element={<Home />} />
+    </Routes> /*   }
   );
 }
 

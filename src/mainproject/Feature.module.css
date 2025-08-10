@@ -1,21 +1,16 @@
 /* FeatureSection.module.css */
 
-.featuresection {
+.feature-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-left: 70px;
   padding-top: 40px;
   gap: 40px;
-  flex-wrap: wrap;
-  top: 0;
-  padding-bottom: 20px;
-  /* Mild orange background */
- background: linear-gradient(to bottom right, #e0f7fa, #f1f8e9);
+  flex-wrap: wrap; /* makes it responsive on small screens */
 }
 
-
-.featureimage img {
+.feature-image img {
   width: 100%;
   max-width: 500px;
   height: 600px;
@@ -24,8 +19,7 @@
 
 }
 
-
-.featuretext {
+.feature-text {
   flex: 1;
   min-width: 300px;
 }
