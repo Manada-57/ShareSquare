@@ -16,6 +16,7 @@ const Login = () => {
       const res = await axios.post('http://localhost:5000/api/login',
         { email, password });
       if (res.status === 200) {
+        sessionStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/home'); // Redirect on successful login
       }
     } catch (err) {

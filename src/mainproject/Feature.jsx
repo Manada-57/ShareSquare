@@ -1,4 +1,4 @@
-import styles from './FeatureSection.module.css'; // make sure this CSS file exists
+import styles from './Feature.module.css'; // make sure this CSS file exists
 export default function feature() {
   return (
     <div className={styles.featuresection}>
