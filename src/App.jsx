@@ -3,8 +3,14 @@ import Hero from "./mainproject/Hero.jsx";
 import Step from "./mainproject/step.jsx";
 import Login from "./Loginpage/Login.jsx";
 import Signup from "./Loginpage/signup.jsx";
-import Feature from "./mainproject/FeatureSection.jsx";
+import Feature from "./mainproject/Feature.jsx";
+import Vision from "./mainproject/Vision.jsx";
+import Anime from "./mainproject/Anime.jsx";
+import ServiceQuote from "./mainproject/Servicequote.jsx";
+import EndPage from "./mainproject/End.jsx";
 import Home from "./Homedash/Homepage.jsx";
+import PostItem from "./Homedash/Postitem.jsx";
+import Profile from "./Homedash/Profile.jsx";
 function App() {
   return (
     
@@ -16,12 +22,17 @@ function App() {
           <Hero />
           <Step />
           <Feature />
-       
+          <Vision />
+          <Anime /> 
+          <ServiceQuote />
+          <EndPage />
         </>
       } />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/home" element={<Home />} />
+      <Route path="/post" element={<PostItem />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }

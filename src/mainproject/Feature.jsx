@@ -1,4 +1,4 @@
-import styles from './FeatureSection.module.css'; // make sure this CSS file exists
+import styles from './Feature.module.css'; // make sure this CSS file exists
 export default function feature() {
   return (
     <div className={styles.featuresection}>
@@ -13,9 +13,7 @@ export default function feature() {
       {/* Right side content */}
       <div className={styles.featuretext}>
         <h2>
-          Making<br />
-          innovations<br />
-          <span className={styles.highlight}>for you</span>
+          Making <br></br> innovations <br></br><span className={styles.highlight}>for you</span>
         </h2>
 
         <div className={styles.featurebox}>

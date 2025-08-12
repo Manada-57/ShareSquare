@@ -1,0 +1,58 @@
+.carousel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+}
+
+.card {
+  position: absolute;
+  width: 60%;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: 16px;
+  transition: all 1s ease-in-out;
+  opacity: 0.3;
+  transform: scale(0.8);
+  text-align: center;
+  height: 60%;
+}
+
+.card.active {
+  z-index: 2;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card.left {
+  left: 10%;
+  transform: translateX(-100%) scale(0.9);
+}
+
+.card.right {
+  right: 10%;
+  transform: translateX(100%) scale(0.9);
+}
+
+.card.hidden {
+  display: none;
+}
+.new{
+  top:30px;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
