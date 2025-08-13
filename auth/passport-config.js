@@ -77,7 +77,7 @@ passport.use(new GitHubStrategy({
   }
 }));
 
-// LINKEDIN (OpenID Connect)
+// LINKEDIN (OpenID Conn
 passport.use('linkedin', new OpenIDConnectStrategy({
   issuer: 'https://www.linkedin.com/oauth',
   authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',

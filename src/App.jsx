@@ -8,10 +8,14 @@ import Vision from "./mainproject/Vision.jsx";
 import Anime from "./mainproject/Anime.jsx";
 import ServiceQuote from "./mainproject/Servicequote.jsx";
 import EndPage from "./mainproject/End.jsx";
+import Home from "./Homedash/Homepage.jsx";
+import PostItem from "./Homedash/Postitem.jsx";
+import Profile from "./Homedash/Profile.jsx";
+import Premium from "./post/premium.jsx";
 function App() {
   return (
     
-     { /* <Routes>
+      <Routes>
       <Route path="/" element={
         <>
         <title>sharesquare</title>
@@ -28,7 +32,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/home" element={<Home />} />
-    </Routes> /*   }
+      <Route path="/post" element={<PostItem />} />
+      <Route path="/profile" element={<Profile />} />
+       <Route path="/premium" element={<Premium />} />
+    </Routes>
   );
 }
 

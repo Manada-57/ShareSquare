@@ -63,8 +63,7 @@ const Signup = () => {
           <h2>Create Account</h2>
           <p>Sign up to get started with ShareSquare</p>
 
-          <input
-            type="text"
+          <input type="text"
             placeholder="Full Name"
             value={name}
             onChange={(e) => setFullname(e.target.value)}
@@ -99,13 +98,7 @@ const Signup = () => {
             </div>
           )}
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
+          <input type="password" placeholder="Confirm Password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           {confirm && (
             <p className={isMatch ? "valid" : "invalid"}>
               {isMatch ? "✅" : "❌"} Passwords match

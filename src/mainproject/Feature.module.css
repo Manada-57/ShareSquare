@@ -1,6 +1,5 @@
 /* FeatureSection.module.css */
-
-.feature-section {
+.featuresection {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -10,7 +9,7 @@
   flex-wrap: wrap; /* makes it responsive on small screens */
 }
 
-.feature-image img {
+.featureimage img {
   width: 100%;
   max-width: 500px;
   height: 600px;
@@ -19,7 +18,7 @@
 
 }
 
-.feature-text {
+.featuretext {
   flex: 1;
   min-width: 300px;
 }

@@ -1,6 +1,4 @@
-import React from 'react';
 import styles from './Feature.module.css'; // make sure this CSS file exists
-
 export default function feature() {
   return (
     <div className={styles.featuresection}>
@@ -35,5 +33,3 @@ export default function feature() {
     </div>
   );
 };
-
-
