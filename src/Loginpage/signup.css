@@ -66,7 +66,6 @@
   text-align: center;
   margin-top: 24px;
 }
-
 .social-signup p {
   margin-bottom: 10px;
   color: #555;
@@ -88,18 +87,27 @@
 
 .social-signup button:hover {
   transform: scale(1.02);
+   transition: transform 0.2s ease;
 }
 
 .google {
   background-color: #db4437;
+  border-radius: 6px;
 }
-
+.google:hover {
+  background-color: #c1351d;
+}
 .github {
   background-color: #24292e;
 }
-
-.linkedin {
+.github:hover {
+  background-color: #161b22;
+}
+.linkedin button{
   background-color: #0077b5;
+}
+.linkedin:hover {
+  background-color: #005582;
 }
 
 /* Link to login */

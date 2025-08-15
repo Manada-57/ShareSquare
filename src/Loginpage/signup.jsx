@@ -112,9 +112,9 @@ const Signup = () => {
           <div className="social-login">
             <p>Or sign up with</p>
             <div className="social-buttons">
-              <a className="google" href="http://localhost:5000/auth/google">Google</a>
-              <a className="github" href="http://localhost:5000/auth/github">GitHub</a>
-              <a className="linkedin" href="http://localhost:5000/auth/linkedin">LinkedIn</a>
+             <a  href="http://localhost:5000/auth/google"> <button className="google">Google</button></a>
+              <a href="http://localhost:5000/auth/github"> <button className="github">GitHub</button></a>
+              <a href="http://localhost:5000/auth/linkedin"> <button  className="linkedin">LinkedIn</button></a>
             </div>
           </div>
           <div className="switch-link">

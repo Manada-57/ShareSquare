@@ -30,11 +30,11 @@ const quotes = [
 ];
 
 export default function QuoteCarousel() {
-  const [current, setCurrent] = useState(0);
+  const [now, setNow] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % quotes.length);
+      setNow((prev) => (prev + 1) % quotes.length);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -43,9 +43,9 @@ export default function QuoteCarousel() {
     <div className={styles.carousel}>
       {quotes.map((q, index) => {
         let position = styles.hidden;
-        if (index === current) position = styles.active;
-        else if (index === (current + 1) % quotes.length) position = styles.right;
-        else if (index === (current -1 + quotes.length) % quotes.length) position = styles.left;
+        if (index === now) position = styles.active;
+        else if (index === (now + 1) % quotes.length) position = styles.right;
+        else if (index === (now -1 + quotes.length) % quotes.length) position = styles.left;
 
         return (
           <div className={`${styles.card} ${position}`} key={index}>
@@ -53,6 +53,7 @@ export default function QuoteCarousel() {
               <img src={q.photo} alt={q.name} className={styles.photo} />
               <span className={styles.name}>{q.name}</span>
             </div>
+            
             <div className={styles.new}>
             <h2 className={styles.quote}>
               "{q.quote}"

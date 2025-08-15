@@ -9,7 +9,7 @@ export default function feature() {
           alt="App Preview"
         />
       </div>
-
+      
       {/* Right side content */}
       <div className={styles.featuretext}>
         <h2>

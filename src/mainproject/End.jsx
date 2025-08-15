@@ -4,8 +4,11 @@ import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp } from "reac
 import { Link } from "react-router-dom";
 
 export default function EndPage() {
+    let position=styles.wrapper;
     return (
-        <div className={styles.wrapper}>
+        
+        <div className={position}>
+            
             <div className={styles.let}>
                 <h2 className={styles.type}>Let's Connect There</h2>
                  <Link to="/signup" className={styles.circle}><h2>Join Us ➤</h2></Link>
