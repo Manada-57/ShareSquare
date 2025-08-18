@@ -1,20 +1,10 @@
 import React, { useState } from "react";
 import styles from "./PremiumSubscription.module.css";
-
-import { SiRazorpay, SiGooglepay, SiPaytm } from "react-icons/si";
-import { MdPayment } from "react-icons/md";
-
-const paymentOptions = [
-  { id: "razorpay", label: "Razorpay", icon: <SiRazorpay size={24} /> },
-  { id: "googlepay", label: "Google Pay", icon: <SiGooglepay size={24} /> },
-  { id: "paytm", label: "Paytm", icon: <SiPaytm size={24} /> },
-  { id: "upi", label: "UPI", icon: <MdPayment size={24} /> },
-];
+import { SiRazorpay } from "react-icons/si";
 
 export default function PremiumSubscription() {
   const [materialType, setMaterialType] = useState("");
   const [days, setDays] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState("");
 
   const pricing = {
     Expensive: 100,
@@ -22,22 +12,65 @@ export default function PremiumSubscription() {
     Small: 20,
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!materialType || !paymentMethod) {
-      alert("Please select material type and payment method");
+  const loadRazorpay = (src) => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpayPayment = async () => {
+    if (!materialType) {
+      alert("Please select a material type");
       return;
     }
-    alert(
-      `Subscribed for ${materialType} material for ${days} day(s). Payment via ${paymentMethod}.`
-    );
+
+    const res = await loadRazorpay("https://checkout.razorpay.com/v1/checkout.js");
+
+    if (!res) {
+      alert("Razorpay SDK failed to load. Are you online?");
+      return;
+    }
+
+    const amount = pricing[materialType] * days * 100; // Razorpay takes amount in paise
+
+    const options = {
+      key: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay key
+      amount: amount,
+      currency: "INR",
+      name: "ShareSquare Premium",
+      description: `Subscription for ${materialType} material`,
+      handler: function (response) {
+        alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+      },
+      prefill: {
+        name: "Your User",
+        email: "user@example.com",
+        contact: "9999999999",
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   };
 
   return (
     <div className={styles.container}>
       <h1>Premium Subscription</h1>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleRazorpayPayment();
+        }}
+        className={styles.form}
+      >
         <label>
           Material Type:
           <select
@@ -70,26 +103,9 @@ export default function PremiumSubscription() {
           </strong>
         </div>
 
-        <div className={styles.paymentOptions}>
-          <p>Select Payment Method:</p>
-          {paymentOptions.map(({ id, label, icon }) => (
-            <label key={id} className={styles.paymentOption}>
-              <input
-                type="radio"
-                name="payment"
-                value={id}
-                checked={paymentMethod === id}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                required
-              />
-              <span className={styles.icon}>{icon}</span>
-              {label}
-            </label>
-          ))}
-        </div>
-
         <button type="submit" className={styles.subscribeButton}>
-          Subscribe Now
+          <SiRazorpay size={24} style={{ marginRight: "8px" }} />
+          Pay with Razorpay
         </button>
       </form>
 
