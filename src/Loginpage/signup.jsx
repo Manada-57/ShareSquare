@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Signup.css';
 import signupImage from '../assets/signup_left_half.png';
+import google from '../assets/download.jpeg';
+import linked from '../assets/linked.png';
+import github from '../assets/git.png';
 import { useNavigate } from 'react-router-dom';
 const Signup = () => {
   const [name, setFullname] = useState('');
@@ -108,14 +111,13 @@ const Signup = () => {
           {message && <p className="server-message">{message}</p>}
 
           <button type="submit" className="login-btn">Sign Up</button>
-
           <div className="social-login">
-            <p>Or sign up with</p>
-            <div className="social-buttons">
-              <a className="google" href="http://localhost:5000/auth/google">Google</a>
-              <a className="github" href="http://localhost:5000/auth/github">GitHub</a>
-              <a className="linkedin" href="http://localhost:5000/auth/linkedin">LinkedIn</a>
-            </div>
+          <p>Or sign up with</p>
+          <div className="social-buttons">
+             <a className="google" href="http://localhost:5000/auth/google"><img src={google} alt="Google" /> Google</a>
+             <a className="github" href="http://localhost:5000/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
+             <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a>
+          </div>
           </div>
           <div className="switch-link">
             Already have an account? <a href="/login">Login</a>

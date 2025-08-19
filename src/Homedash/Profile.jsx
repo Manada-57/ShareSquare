@@ -9,9 +9,10 @@ export default function Profile() {
 
   useEffect(() => {
     if (email) {
-          axios.get(`http://localhost:5000/api/posts?email=${email}`)
-        .then(res => setPosts(res.data))
-        .catch(err => console.error(err));
+      axios
+        .get(`http://localhost:5000/api/posts?email=${email}`)
+        .then((res) => setPosts(res.data))
+        .catch((err) => console.error(err));
     }
   }, [email]);
 
@@ -45,13 +46,16 @@ export default function Profile() {
       {/* Posts grid */}
       <div className="post-grid">
         {posts.length > 0 ? (
-          posts.map((post, index) => (
-            post.images?.map((img, i) => (
+          posts.map((post, index) =>
+            post.images?.map((filename, i) => (
               <div key={`${index}-${i}`} className="post-item">
-                <img src={`http://localhost:5000${img}`} alt={post.title} />
+                <img
+                  src={`http://localhost:5000/api/image/${filename}`} // GridFS route
+                  alt={post.title}
+                />
               </div>
             ))
-          ))
+          )
         ) : (
           <div className="no-posts">
             <h3>Share Photos</h3>
