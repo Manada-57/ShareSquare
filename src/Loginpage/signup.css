@@ -91,15 +91,15 @@
 }
 
 .google {
-  background-color: #db4437;
+  background-color: white;
 }
 
 .github {
-  background-color: #24292e;
+  background-color: white;
 }
 
 .linkedin {
-  background-color: #0077b5;
+  background-color: white;
 }
 
 /* Link to login */
@@ -157,4 +157,19 @@ input.confirm-match {
 .tick-mark {
   font-weight: bold;
   margin-left: auto;
+}
+.social-buttons a {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.social-buttons img {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
 }

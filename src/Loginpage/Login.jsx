@@ -1,11 +1,27 @@
-import React from 'react';
+import { React, useEffect} from 'react';
 import './Login.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import loginImage from '../assets/login.jpg';
-
+import google from '../assets/download.jpeg';
+import linked from '../assets/linked.png';
+import github from '../assets/git.png';
 const Login = () => {
   const navigate = useNavigate();
+    // ✅ Capture email from query params (social login redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+
+    if (email) {
+      // Save social login user in sessionStorage
+      sessionStorage.setItem("user", JSON.stringify({ email }));
+
+      // Redirect to home
+      navigate('/home', { replace: true });
+    }
+  }, [navigate]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,19 +59,12 @@ const Login = () => {
 
           <div className="social-login">
             <p>Or login with:</p>
-            <div className="social-buttons">
-              <a href="http://localhost:5000/auth/google">
-                <button type="button" className="google">Google</button>
-              </a>
-              <a href="http://localhost:5000/auth/github">
-                <button type="button" className="github">GitHub</button>
-              </a>
-              <a href="http://localhost:5000/auth/linkedin">
-                <button type="button" className="linkedin">LinkedIn</button>
-              </a>
-            </div>
-          </div>
-
+                      <div className="social-buttons">
+                         <a className="google" href="http://localhost:5000/auth/google"><img src={google} alt="Google" /> Google</a>
+                         <a className="github" href="http://localhost:5000/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
+                         <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a>
+                      </div>
+                      </div>
           <p className="switch-link">
             Don’t have an account? <Link to="/signup">Signup</Link>
           </p>
