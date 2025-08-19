@@ -91,20 +91,14 @@
 }
 
 .google {
-  background-color: #db4437;
-  border-radius: 6px;
-}
-.google:hover {
-  background-color: #c1351d;
+  background-color: white;
 }
 .github {
-  background-color: #24292e;
+  background-color: white;
 }
-.github:hover {
-  background-color: #161b22;
-}
-.linkedin button{
-  background-color: #0077b5;
+
+.linkedin {
+  background-color: white;
 }
 .linkedin:hover {
   background-color: #005582;
@@ -165,4 +159,19 @@ input.confirm-match {
 .tick-mark {
   font-weight: bold;
   margin-left: auto;
+}
+.social-buttons a {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.social-buttons img {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
 }

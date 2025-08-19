@@ -1,90 +1,167 @@
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import Post from './models/post.js'
+import Post from './models/post.js';
 import User from './models/user.js';
 import passport from 'passport';
 import './auth/passport-config.js';
 import dotenv from 'dotenv';
 dotenv.config();
 import session from 'express-session';
-import multer from "multer";
-const upload = multer({ dest: "uploads/" });
+import multer from 'multer';
+import { GridFSBucket } from 'mongodb';
+import fs from 'fs';
+import path from 'path';
+import mime from 'mime';
+import http from 'http';
+import { Server } from 'socket.io';
+
 const app = express();
+const server = http.createServer(app); // ✅ Use http server for socket.io
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // your React frontend URL
+    methods: ["GET", "POST"]
+  }
+});
+
 app.use(express.json());
 app.use(session({
   secret: 'sharesquare_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // true if using HTTPS
+  cookie: { secure: false }
 }));
 app.use(cors());
-app.use(express.json());
 app.use(passport.initialize());
 app.use(passport.session());
-mongoose.connect('mongodb://localhost:27017/sharesquare', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
+
+const mongoURI = 'mongodb://localhost:27017/sharesquare';
+
+let gfsBucket;
+let upload;
+
+// ---------------- CONNECT TO MONGO ----------------
+const startServer = async () => {
+  await mongoose.connect(mongoURI);
   console.log('✅ Connected to MongoDB');
-})
-.catch((err) => {
-  console.error('❌ Connection error:', err);
-});
-app.post('/api/signup', async (req, res) => {
-  const { name, email, password, confirmpassword } = req.body;
 
-  if (!name || !email || !password || !confirmpassword) {
-    return res.status(400).json({ message: 'Please fill all fields' });
-  }
+  gfsBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+  console.log('✅ GridFSBucket ready');
 
-  if (password !== confirmpassword) {
-    return res.status(400).json({ message: 'Passwords do not match' });
-  }
+  // Disk storage for multer
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = './tmp_uploads';
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`);
+    }
+  });
+  upload = multer({ storage });
+  console.log('✅ Multer disk storage ready');
 
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email already exists' });
-  }
+  server.listen(5000, () => console.log('🚀 Server running on http://localhost:5000'));
+};
 
-  const newUser = new User({
-    name,
-    email,
-    password,
-    mobileNumber: '',
-    gender: '',
-    country: '',
-    state: '',  
-    city: ''
+startServer().catch(err => console.error(err));
+
+
+// ---------------- SOCKET.IO CHAT ----------------
+io.on("connection", (socket) => {
+  console.log("🟢 User connected:", socket.id);
+
+  // Listen for chat messages
+  socket.on("chat-message", (data) => {
+    console.log("💬 Message:", data);
+
+    // Broadcast to all connected clients
+    io.emit("chat-message", data);
   });
 
+  socket.on("disconnect", () => {
+    console.log("🔴 User disconnected:", socket.id);
+  });
+});
+
+
+// ---------------- AUTH ROUTES ----------------
+app.post('/api/signup', async (req, res) => {
+  const { name, email, password, confirmpassword } = req.body;
+  if (!name || !email || !password || !confirmpassword) return res.status(400).json({ message: 'Please fill all fields' });
+  if (password !== confirmpassword) return res.status(400).json({ message: 'Passwords do not match' });
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+
+  const newUser = new User({ name, email, password, mobileNumber:'', gender:'', country:'', state:'', city:'' });
   try {
     await newUser.save();
     res.status(200).json({ message: 'User registered successfully!' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error registering user' });
+    res.status(500).json({ message: err.message });
   }
 });
+
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await User.findOne({ email });
-
-    if (!user || user.password !== password) {
-      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
-    }
-    const userInfo = { email: user.email }; 
-    return res.status(200).json({ status: 'ok', message: 'Login successful',user: userInfo });
-
+    if (!user || user.password !== password) return res.status(401).json({ status:'error', message:'Invalid credentials' });
+    res.status(200).json({ status:'ok', message:'Login successful', user: { email: user.email } });
   } catch (err) {
-    console.error('Login error:', err);
-    return res.status(500).json({ status: 'error', message: 'Server error' });
+    res.status(500).json({ status:'error', message: err.message });
   }
 });
+// Google
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
 
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
+
+// LinkedIn
+app.get('/auth/linkedin',
+  passport.authenticate('linkedin')
+);
+
+app.get('/auth/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
+
+// GitHub
+app.get('/auth/github',
+  passport.authenticate('github', { scope: ['user:email'] })
+);
+
+app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
 
 // Check current session
 app.get('/api/current-user', (req, res) => {
@@ -96,62 +173,108 @@ app.get('/api/current-user', (req, res) => {
 });
 app.get('/api/logout', (req, res) => {
   req.session.destroy(err => {
-    if (err) {
-      return res.status(500).json({ message: 'Logout failed' });
-    }
-    res.clearCookie('connect.sid'); // Name may differ if changed
+    if (err) return res.status(500).json({ message: 'Logout failed' });
+    res.clearCookie('connect.sid');
     res.json({ message: 'Logged out successfully' });
   });
 });
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-app.get('/auth/google/callback', passport.authenticate('google', {
-  successRedirect: 'http://localhost:5173/home',
-  failureRedirect: 'http://localhost:5173/login',
-}));
-app.get('/auth/linkedin', passport.authenticate('linkedin'));
-app.get('/auth/linkedin/callback', passport.authenticate('linkedin', {
-  successRedirect: 'http://localhost:5173/home',
-  failureRedirect: 'http://localhost:5173/login'
-}));
 
-app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
-app.get('/auth/github/callback', passport.authenticate('github', {
-  successRedirect: 'http://localhost:5173/home',
-  failureRedirect: 'http://localhost:5173/login'
-}));  
-app.post("/api/post", upload.array("images", 5), async (req, res) => {
+
+// ---------------- POSTS ROUTES ----------------
+app.post('/api/post', (req, res) => {
+  if (!upload) return res.status(503).json({ success:false, error:'Upload system not ready.' });
+
+  upload.array('images', 5)(req, res, async (err) => {
+    if (err) return res.status(500).json({ success:false, error: err.message });
+
+    try {
+      if (!req.files || req.files.length === 0) return res.status(400).json({ success:false, error:'No files uploaded' });
+
+      const { title, description, category, condition, location, userEmail } = req.body;
+      const tags = JSON.parse(req.body.tags || '[]');
+      const contactPrefs = JSON.parse(req.body.contactPrefs || '[]');
+
+      const imageFilenames = [];
+
+      for (const file of req.files) {
+        const filePath = path.join(file.destination, file.filename);
+        const readStream = fs.createReadStream(filePath);
+
+        // Set contentType for browser
+        const uploadStream = gfsBucket.openUploadStream(file.filename, {
+          contentType: file.mimetype
+        });
+
+        readStream.pipe(uploadStream);
+
+        await new Promise((resolve, reject) => {
+          uploadStream.on('finish', resolve);
+          uploadStream.on('error', reject);
+        });
+
+        fs.unlinkSync(filePath); // delete temp file
+        imageFilenames.push(file.filename);
+      }
+
+      const newItem = new Post({
+        title, description, category, condition,
+        tags, location, contactPrefs, userEmail,
+        images: imageFilenames
+      });
+
+      await newItem.save();
+      res.json({ success:true, item: newItem });
+    } catch (err) {
+      res.status(500).json({ success:false, error: err.message });
+    }
+  });
+});app.get('/api/posts', async (req, res) => {
+   const { email } = req.query; 
+   try { 
+    const posts = await Post.find({ userEmail: email }); 
+    const formattedPosts = posts.map(post => ({ ...post._doc, images: post.images // return the array of filenames as-is 
+})); 
+res.json(formattedPosts);
+ } catch (err) {
+   res.status(500).json({ error: err.message }); 
+  } 
+});
+// ---------------- IMAGE FETCH ROUTE ----------------
+app.get('/api/image/:filename', async (req, res) => {
   try {
-    const { title, description, category, condition, location, userEmail } = req.body;
-    const tags = JSON.parse(req.body.tags || "[]");
-    const contactPrefs = JSON.parse(req.body.contactPrefs || "[]");
+    const file = await mongoose.connection.db
+      .collection('uploads.files')
+      .findOne({ filename: req.params.filename });
 
-    const newItem = new Post({
-      title,
-      description,
-      category,
-      condition,
-      tags,
-      location,
-      contactPrefs,
-      userEmail,
-      images: req.files.map(file => file.filename)
-    });
+    if (!file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
 
-    await newItem.save();
-    res.json({ success: true, item: newItem });
+    const downloadStream = gfsBucket.openDownloadStreamByName(req.params.filename);
+    res.set('Content-Type', file.contentType || 'image/jpeg');
+    downloadStream.pipe(res);
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
-app.get("/api/posts", async (req, res) => {
-  const { email } = req.query;
+// ---------------- EXPLORE POSTS (random) ----------------
+app.get('/api/explore', async (req, res) => {
   try {
-    const posts = await Post.find({ userEmail : email });
-    res.json(posts);
+    const posts = await Post.aggregate([{ $sample: { size: 20 } }]);
+
+    const formattedPosts = posts.map(post => ({
+      _id: post._id,
+      title: post.title,
+      description: post.description,
+      email: post.userEmail, // directly included from Post schema
+      images: post.images     }));
+
+    res.json(formattedPosts);
   } catch (err) {
-    res.status(500).json({ error: err });
+    console.error("Error fetching explore posts:", err);
+    res.status(500).json({ error: "Failed to fetch explore posts" });
   }
 });
-app.listen(5000, () => {
-  console.log('🚀 Server running on http://localhost:5000');
-});
+
+
+

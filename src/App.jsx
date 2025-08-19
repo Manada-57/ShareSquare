@@ -11,7 +11,8 @@ import EndPage from "./mainproject/End.jsx";
 import Home from "./Homedash/Homepage.jsx";
 import PostItem from "./Homedash/Postitem.jsx";
 import Profile from "./Homedash/Profile.jsx";
-import Premium from "./post/premium.jsx";
+import ChatBox from "./Homedash/Chatbox.jsx";
+import Explore from "./explore/Explore.jsx";
 function App() {
   return (
     
@@ -34,7 +35,8 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/post" element={<PostItem />} />
       <Route path="/profile" element={<Profile />} />
-       <Route path="/premium" element={<Premium />} />
+      <Route path="/chatbox" element={<ChatBox />} />
+      <Route path="/explore" element={<Explore />} />
     </Routes>
   );
 }
