@@ -9,18 +9,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 import session from 'express-session';
 import multer from 'multer';
-import { GridFSBucket } from 'mongodb';
-import fs from 'fs';
-import path from 'path';
-import mime from 'mime';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from 'cloudinary';
 import http from 'http';
 import { Server } from 'socket.io';
-
+import nodemailer from "nodemailer";
+import crypto from "crypto";
+import moment from "moment";
+import Verification from './models/verification.js';
 const app = express();
-const server = http.createServer(app); // ✅ Use http server for socket.io
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // your React frontend URL
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
@@ -36,56 +37,46 @@ app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 
-const mongoURI = 'mongodb://localhost:27017/sharesquare';
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-let gfsBucket;
-let upload;
+// ✅ Success message
+cloudinary.v2.api.ping()
+  .then(() => console.log("✅ Cloudinary connected successfully"))
+  .catch(err => console.error("❌ Cloudinary connection failed:", err));
 
+// Storage setup
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: 'sharesquare',               // folder name in your Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png'], // restrict formats
+  },
+});
+
+const upload = multer({ storage });
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 // ---------------- CONNECT TO MONGO ----------------
-const startServer = async () => {
-  await mongoose.connect(mongoURI);
-  console.log('✅ Connected to MongoDB');
-
-  gfsBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
-  console.log('✅ GridFSBucket ready');
-
-  // Disk storage for multer
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadDir = './tmp_uploads';
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
-    }
-  });
-  upload = multer({ storage });
-  console.log('✅ Multer disk storage ready');
-
-  server.listen(5000, () => console.log('🚀 Server running on http://localhost:5000'));
-};
-
-startServer().catch(err => console.error(err));
-
+const mongoURI = 'mongodb+srv://jseetharaman07bcs27:cooDGXdEE4Z6mJet@sharesquare.tkw31yh.mongodb.net/ShareSquare';
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch(err => console.error(err));
 
 // ---------------- SOCKET.IO CHAT ----------------
 io.on("connection", (socket) => {
   console.log("🟢 User connected:", socket.id);
-
-  // Listen for chat messages
-  socket.on("chat-message", (data) => {
-    console.log("💬 Message:", data);
-
-    // Broadcast to all connected clients
-    io.emit("chat-message", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("🔴 User disconnected:", socket.id);
-  });
+  socket.on("chat-message", (data) => io.emit("chat-message", data));
+  socket.on("disconnect", () => console.log("🔴 User disconnected:", socket.id));
 });
-
 
 // ---------------- AUTH ROUTES ----------------
 app.post('/api/signup', async (req, res) => {
@@ -115,62 +106,7 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ status:'error', message: err.message });
   }
 });
-// Google
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
-  (req, res) => {
-    if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
-    } else {
-      res.redirect('http://localhost:5173/login');
-    }
-  }
-);
-
-// LinkedIn
-app.get('/auth/linkedin',
-  passport.authenticate('linkedin')
-);
-
-app.get('/auth/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5173/login' }),
-  (req, res) => {
-    if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
-    } else {
-      res.redirect('http://localhost:5173/login');
-    }
-  }
-);
-
-// GitHub
-app.get('/auth/github',
-  passport.authenticate('github', { scope: ['user:email'] })
-);
-
-app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: 'http://localhost:5173/login' }),
-  (req, res) => {
-    if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
-    } else {
-      res.redirect('http://localhost:5173/login');
-    }
-  }
-);
-
-// Check current session
-app.get('/api/current-user', (req, res) => {
-  if (req.session.user) {
-    res.json({ user: req.session.user });
-  } else {
-    res.status(401).json({ error: 'Not logged in' });
-  }
-});
 app.get('/api/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
@@ -178,103 +114,141 @@ app.get('/api/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
   });
 });
+app.post('/api/verify/sendc', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'Email is required.' });
 
+  const code = crypto.randomInt(100000, 999999); // 6-digit code
+  const expiry = moment().add(10, 'minutes').toDate();
+
+  await Verification.findOneAndUpdate(
+    { email },
+    { code, expiresAt: expiry, verified: false },
+    { upsert: true }
+  );
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your Verification Code',
+    text: `Your verification code is ${code}. It expires in 10 minutes.`
+  };
+
+  transporter.sendMail(mailOptions, (err) => {
+    if (err) return res.status(500).json({ message: 'Failed to send email.' });
+    res.status(200).json({ message: 'Verification code sent.' });
+  });
+});
+app.post('/api/verify/check', async (req, res) => {
+  const { email, code } = req.body;
+  const record = await Verification.findOne({ email });
+  if (!record) return res.status(400).json({ message: 'No verification code found.' });
+
+  if (new Date() > record.expiresAt) {
+    await Verification.deleteOne({ email });
+    return res.status(400).json({ message: 'Code expired.' });
+  }
+
+  if (parseInt(code) !== record.code) {
+    return res.status(400).json({ message: 'Invalid code.' });
+  }
+
+  record.verified = true;
+  await record.save();
+
+  res.status(200).json({ message: 'Email verified successfully!' });
+});
 
 // ---------------- POSTS ROUTES ----------------
-app.post('/api/post', (req, res) => {
-  if (!upload) return res.status(503).json({ success:false, error:'Upload system not ready.' });
-
-  upload.array('images', 5)(req, res, async (err) => {
-    if (err) return res.status(500).json({ success:false, error: err.message });
-
-    try {
-      if (!req.files || req.files.length === 0) return res.status(400).json({ success:false, error:'No files uploaded' });
-
-      const { title, description, category, condition, location, userEmail } = req.body;
-      const tags = JSON.parse(req.body.tags || '[]');
-      const contactPrefs = JSON.parse(req.body.contactPrefs || '[]');
-
-      const imageFilenames = [];
-
-      for (const file of req.files) {
-        const filePath = path.join(file.destination, file.filename);
-        const readStream = fs.createReadStream(filePath);
-
-        // Set contentType for browser
-        const uploadStream = gfsBucket.openUploadStream(file.filename, {
-          contentType: file.mimetype
-        });
-
-        readStream.pipe(uploadStream);
-
-        await new Promise((resolve, reject) => {
-          uploadStream.on('finish', resolve);
-          uploadStream.on('error', reject);
-        });
-
-        fs.unlinkSync(filePath); // delete temp file
-        imageFilenames.push(file.filename);
-      }
-
-      const newItem = new Post({
-        title, description, category, condition,
-        tags, location, contactPrefs, userEmail,
-        images: imageFilenames
-      });
-
-      await newItem.save();
-      res.json({ success:true, item: newItem });
-    } catch (err) {
-      res.status(500).json({ success:false, error: err.message });
-    }
-  });
-});app.get('/api/posts', async (req, res) => {
-   const { email } = req.query; 
-   try { 
-    const posts = await Post.find({ userEmail: email }); 
-    const formattedPosts = posts.map(post => ({ ...post._doc, images: post.images // return the array of filenames as-is 
-})); 
-res.json(formattedPosts);
- } catch (err) {
-   res.status(500).json({ error: err.message }); 
-  } 
-});
-// ---------------- IMAGE FETCH ROUTE ----------------
-app.get('/api/image/:filename', async (req, res) => {
+app.post('/api/post', upload.array('images', 5), async (req, res) => {
   try {
-    const file = await mongoose.connection.db
-      .collection('uploads.files')
-      .findOne({ filename: req.params.filename });
+    if (!req.files || req.files.length === 0) return res.status(400).json({ success:false, error:'No files uploaded' });
 
-    if (!file) {
-      return res.status(404).json({ error: 'File not found' });
-    }
+    const { title, description, category, condition, location, userEmail } = req.body;
+    const tags = JSON.parse(req.body.tags || '[]');
+    const contactPrefs = JSON.parse(req.body.contactPrefs || '[]');
 
-    const downloadStream = gfsBucket.openDownloadStreamByName(req.params.filename);
-    res.set('Content-Type', file.contentType || 'image/jpeg');
-    downloadStream.pipe(res);
+    // Store Cloudinary URLs
+    const imageUrls = req.files.map(file => file.path);
+
+    const newItem = new Post({
+      title,
+      description,
+      category,
+      condition,
+      tags,
+      location,
+      contactPrefs,
+      userEmail,
+      images: imageUrls
+    });
+
+    await newItem.save();
+    res.json({ success:true, item: newItem });
+  } catch (err) {
+    res.status(500).json({ success:false, error: err.message });
+  }
+});
+
+app.get('/api/posts', async (req, res) => {
+  const { email } = req.query;
+  try {
+    const posts = await Post.find({ userEmail: email });
+    res.json(posts); // images already contain Cloudinary URLs
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-// ---------------- EXPLORE POSTS (random) ----------------
+
+// ---------------- EXPLORE POSTS ----------------
 app.get('/api/explore', async (req, res) => {
   try {
     const posts = await Post.aggregate([{ $sample: { size: 20 } }]);
-
     const formattedPosts = posts.map(post => ({
       _id: post._id,
       title: post.title,
       description: post.description,
-      email: post.userEmail, // directly included from Post schema
-      images: post.images     }));
-
+      email: post.userEmail,
+      images: post.images
+    }));
     res.json(formattedPosts);
   } catch (err) {
-    console.error("Error fetching explore posts:", err);
-    res.status(500).json({ error: "Failed to fetch explore posts" });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch explore posts' });
+  }
+});
+app.get("/api/user", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      profilePic: user.profilePic,
+      followers: user.followersList.length,
+      following: user.followingList.length,
+      followersList: user.followersList, // needed to check connection status
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});
+// ---------------- START SERVER ----------------
+app.listen(5000)
+  .on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${5000} is already in use!`);
+    }
+  });
 
