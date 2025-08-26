@@ -13,6 +13,8 @@ import PostItem from "./Homedash/Postitem.jsx";
 import Profile from "./Homedash/Profile.jsx";
 import ChatBox from "./Homedash/Chatbox.jsx";
 import Explore from "./explore/Explore.jsx";
+import Premium from "./post/premium.jsx";
+import PaymentSuccess from "./post/PaymentSuccess.jsx";
 function App() {
   return (
     
@@ -28,6 +30,7 @@ function App() {
           <Anime /> 
           <ServiceQuote />
           <EndPage />
+          
         </>
       } />
       <Route path="/login" element={<Login />} />
@@ -37,6 +40,8 @@ function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/chatbox" element={<ChatBox />} />
       <Route path="/explore" element={<Explore />} />
+      <Route path="/premium" element={<Premium />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
     </Routes>
   );
 }

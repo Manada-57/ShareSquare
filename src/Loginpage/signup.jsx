@@ -57,6 +57,13 @@ const Signup = () => {
   };
 
   return (
+    <div className="visme_d"  data-title="Webinar Regitration form"
+    data-url="g7ddqxx0-untitled-project?"
+    fullPage="true"
+    data-domain="forms"
+    data-full-page="true"
+    data-min-height="100vh"
+    data-form-id="133190"> 
     <div className="login-wrapper">
       <div className="login-left">
         <img src={signupImage} alt="Signup" className="login-img" />
@@ -124,7 +131,8 @@ const Signup = () => {
           </div>
         </form>
       </div>
-    </div>
+    </div> 
+    </div>   
   );
 };
 

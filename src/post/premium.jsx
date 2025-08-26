@@ -1,84 +1,65 @@
 import React, { useState } from "react";
-import styles from "./PremiumSubscription.module.css";
-import { SiRazorpay } from "react-icons/si";
+import styles from "./PremiumSubscription.module.css"; // keep original CSS
+import { SiStripe } from "react-icons/si"; // Stripe icon
 
 export default function PremiumSubscription() {
-  const [materialType, setMaterialType] = useState("");
+  const [planType, setPlanType] = useState("");
   const [days, setDays] = useState(1);
 
   const pricing = {
-    Expensive: 100,
-    Medium: 50,
-    Small: 20,
+    Expensive: 1000, // in rupees
+    Medium: 500,
+    Small: 200,
   };
 
-  const loadRazorpay = (src) => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handleRazorpayPayment = async () => {
-    if (!materialType) {
-      alert("Please select a material type");
+  const handleStripePayment = async () => {
+    if (!planType) {
+      alert("Please select a subscription plan");
       return;
     }
 
-    const res = await loadRazorpay("https://checkout.razorpay.com/v1/checkout.js");
+    const amount = pricing[planType] * days; // rupees, backend converts to paise
 
-    if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
-      return;
+    try {
+      const res = await fetch("http://localhost:5000/api/make-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, productName: `Subscription: ${planType}` }),
+      });
+
+      const data = await res.json();
+
+      if (data.url) {
+        // Redirect user to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        alert("Failed to create payment session");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert("Payment failed. Try again.");
     }
-
-    const amount = pricing[materialType] * days * 100; // Razorpay takes amount in paise
-
-    const options = {
-      key: "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay key
-      amount: amount,
-      currency: "INR",
-      name: "ShareSquare Premium",
-      description: `Subscription for ${materialType} material`,
-      handler: function (response) {
-        alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-      },
-      prefill: {
-        name: "Your User",
-        email: "user@example.com",
-        contact: "9999999999",
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
   };
 
   return (
     <div className={styles.container}>
-      <h1>Premium Subscription</h1>
+      <h1>Subscription Plans</h1>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleRazorpayPayment();
+          handleStripePayment();
         }}
         className={styles.form}
       >
         <label>
-          Material Type:
+          Subscription Plan:
           <select
-            value={materialType}
-            onChange={(e) => setMaterialType(e.target.value)}
+            value={planType}
+            onChange={(e) => setPlanType(e.target.value)}
             required
           >
-            <option value="">Select type</option>
+            <option value="">Select plan</option>
             <option value="Expensive">Expensive</option>
             <option value="Medium">Medium</option>
             <option value="Small">Small</option>
@@ -99,23 +80,23 @@ export default function PremiumSubscription() {
 
         <div className={styles.price}>
           <strong>
-            Total Price: ₹{materialType ? pricing[materialType] * days : 0}
+            Total Price: ₹{planType ? pricing[planType] * days : 0}
           </strong>
         </div>
 
         <button type="submit" className={styles.subscribeButton}>
-          <SiRazorpay size={24} style={{ marginRight: "8px" }} />
-          Pay with Razorpay
+          <SiStripe size={24} style={{ marginRight: "8px" }} />
+          Pay with Stripe
         </button>
       </form>
 
       <div className={styles.infoBox}>
-        <h3>Why go Premium?</h3>
+        <h3>Why choose a Subscription?</h3>
         <ul>
-          <li>Borrow rare items with higher priority</li>
-          <li>Extended borrowing days without extra fee</li>
-          <li>Access to exclusive exchange offers</li>
-          <li>24/7 customer support</li>
+          <li>Access exclusive items with higher priority</li>
+          <li>Extended usage days without extra charges</li>
+          <li>Unlock special offers for subscribers</li>
+          <li>24/7 customer support for subscribers</li>
         </ul>
       </div>
     </div>

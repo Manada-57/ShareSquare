@@ -15,7 +15,9 @@ import path from 'path';
 import mime from 'mime';
 import http from 'http';
 import { Server } from 'socket.io';
+import Stripe from 'stripe';
 
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY); // <-- your Stripe secret key from .env
 const app = express();
 const server = http.createServer(app); // ✅ Use http server for socket.io
 const io = new Server(server, {
@@ -36,7 +38,7 @@ app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 
-const mongoURI = 'mongodb://localhost:27017/sharesquare';
+const mongoURI = 'mongodb+srv://jseetharaman07bcs27:cooDGXdEE4Z6mJet@sharesquare.tkw31yh.mongodb.net/ShareSquare';
 
 let gfsBucket;
 let upload;
@@ -275,6 +277,45 @@ app.get('/api/explore', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch explore posts" });
   }
 });
+app.post("/api/make-payment", async (req, res) => {
+  try {
+    const { amount, productName } = req.body;
 
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'inr',        // <-- INR
+          product_data: { name: productName },
+          unit_amount: amount * 100, // convert rupees to paise
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+     success_url: `http://localhost:5173/payment-success?product=${encodeURIComponent(productName)}`,
+  cancel_url: 'http://localhost:5173/payment-cancel',
+    });
 
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Payment failed' });
+  }
+});
 
+// Express route to update profile
+app.put("/api/profile/:email", async (req, res) => {
+  const { email } = req.params;
+  const updateData = req.body;
+
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      { $set: updateData },
+      { new: true }
+    );
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating profile", error: err });
+  }
+});

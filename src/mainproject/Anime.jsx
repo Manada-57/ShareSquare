@@ -46,7 +46,6 @@ export default function QuoteCarousel() {
         if (index === now) position = styles.active;
         else if (index === (now + 1) % quotes.length) position = styles.right;
         else if (index === (now -1 + quotes.length) % quotes.length) position = styles.left;
-
         return (
           <div className={`${styles.card} ${position}`} key={index}>
             <div className={styles.profile}>
