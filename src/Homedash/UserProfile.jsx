@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./Profile.css";
+import "./UserProfile.css";
 
-export default function Profile() {
+export default function UserProfile() {
+  const { email } = useParams();
+  const navigate = useNavigate();
+
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [userData, setUserData] = useState(null);
+  const [isConnected, setIsConnected] = useState(false); // follow status
 
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  const email = user?.email;
+  const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
 
   useEffect(() => {
     if (email) {
@@ -19,29 +23,61 @@ export default function Profile() {
         .then((res) => setPosts(res.data))
         .catch((err) => console.error(err));
 
-      // Fetch user's profile data (followers/following)
+      // Fetch user's profile data
       axios
         .get(`http://localhost:5000/api/user?email=${email}`)
         .then((res) => {
           setUserData(res.data);
           setFollowers(res.data.followers || 0);
           setFollowing(res.data.following || 0);
+          // check if current user follows this user
+          setIsConnected(res.data.followersList?.includes(currentUser));
         })
         .catch((err) => console.error(err));
     }
-  }, [email]);
+  }, [email, currentUser]);
+
+  const handleConnect = () => {
+    // Toggle connection
+    axios
+      .post(`http://localhost:5000/api/connect`, {
+        currentUser,
+        targetUser: email,
+      })
+      .then((res) => {
+        setIsConnected(res.data.connected); // backend returns true/false
+        setFollowers(res.data.followersCount);
+      })
+      .catch((err) => console.error(err));
+  };
+
+  const handleMessage = () => {
+    // Navigate to chat with this user
+    navigate(`/chatbox?user=${email}`);
+  };
 
   return (
     <div className="profile-page">
       {/* Header */}
       <div className="profile-header">
         <div className="profile-pic">
-          <img src="https://via.placeholder.com/150" alt="Profile" />
+          <img src={userData?.profilePic || "https://via.placeholder.com/150"} alt="Profile" />
         </div>
         <div className="profile-details">
           <div className="profile-top">
             <h2>{userData?.username || email?.split("@")[0]}</h2>
-            <button className="edit-btn">Edit Profile</button>
+            <div className="user-buttons">
+              {currentUser !== email && (
+                <>
+                  <button className="connect-btn" onClick={handleConnect}>
+                    {isConnected ? "Connected" : "Connect"}
+                  </button>
+                  <button className="message-btn" onClick={handleMessage}>
+                    Message
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           <div className="profile-stats">
             <span><strong>{posts.length}</strong> posts</span>
@@ -49,8 +85,8 @@ export default function Profile() {
             <span><strong>{following}</strong> following</span>
           </div>
           <div className="profile-bio">
-            <p><strong></strong></p>
-            <p></p>
+            <p><strong>{userData?.name || "User Name"}</strong></p>
+            <p>{userData?.bio || "This user has no bio yet."}</p>
           </div>
         </div>
       </div>
@@ -64,18 +100,14 @@ export default function Profile() {
           posts.map((post, index) =>
             post.images?.map((filename, i) => (
               <div key={`${index}-${i}`} className="post-item">
-                <img
-                  src={filename} // GridFS route
-                  alt={post.title}
-                />
+                <img src={filename} alt={post.title || "Post"} />
               </div>
             ))
           )
         ) : (
           <div className="no-posts">
-            <h3>Share Photos</h3>
-            <p>When you share photos, they will appear on your profile.</p>
-            <button>Share your first photo</button>
+            <h3>No Posts Yet</h3>
+            <p>This user hasn’t shared any photos yet.</p>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@ import "./Explore.css";
 
 export default function Explore() {
   const [posts, setPosts] = useState([]);
-  const [selectedPost, setSelectedPost] = useState(null); // ✅ For modal
+  const [selectedPost, setSelectedPost] = useState(null); // For modal
 
   useEffect(() => {
     axios
@@ -28,19 +28,27 @@ export default function Explore() {
       <div className="post-grid">
         {posts.length > 0 ? (
           posts.map((post, index) =>
-            post.images?.map((filename, i) => (
-              <div
-                key={`${index}-${i}`}
-                className="post-item"
-                onClick={() => setSelectedPost({ ...post, image: filename })} // ✅ Open modal
-              >
-                <img
-                  src={`http://localhost:5000/api/image/${filename}`}
-                  alt={post.title || "Post image"}
-                />
-                <p className="author">👤 {post.email || "Unknown user"}</p>
+            post.images?.length > 0 ? (
+              post.images.map((imageUrl, i) => (
+                <div
+                  key={`${index}-${i}`}
+                  className="post-item"
+                  onClick={() =>
+                    setSelectedPost({ ...post, image: imageUrl })
+                  }
+                >
+                  <img
+                    src={imageUrl} // Use Cloudinary URL directly
+                    alt={post.title || "Post image"}
+                  />
+                  <p className="author">👤 {post.email || "Unknown user"}</p>
+                </div>
+              ))
+            ) : (
+              <div key={index} className="post-item no-image">
+                <p>No images for this post</p>
               </div>
-            ))
+            )
           )
         ) : (
           <div className="no-posts">
@@ -52,16 +60,22 @@ export default function Explore() {
 
       {/* Modal for Post Details */}
       {selectedPost && (
-        <div className="modal-overlay" onClick={() => setSelectedPost(null)}> 
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedPost(null)}
+        >
           <div
             className="modal-content"
-            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
           >
-            <span className="close-btn" onClick={() => setSelectedPost(null)}>
+            <span
+              className="close-btn"
+              onClick={() => setSelectedPost(null)}
+            >
               ✖
             </span>
             <img
-              src={`http://localhost:5000/api/image/${selectedPost.image}`}
+              src={selectedPost.image} // Use Cloudinary URL
               alt="Post"
               className="modal-image"
             />
