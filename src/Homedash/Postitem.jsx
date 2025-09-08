@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Postitem.css";
-
+import Header from "./Header.jsx";
 export default function PostItem() {
   const storedUser = sessionStorage.getItem("user");
   const userEmail = storedUser ? JSON.parse(storedUser).email : null;
@@ -15,9 +15,7 @@ export default function PostItem() {
     contactPrefs: [],
     images: []
   });
-
   const availableTags = ["Exchangeable", "Borrow", "Sale"];
-
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === "checkbox" && name === "tags") {
@@ -49,22 +47,14 @@ export default function PostItem() {
 
   try {
     const formDataToSend = new FormData();
-
-    // Append all text fields
     formDataToSend.append("title", formData.title);
     formDataToSend.append("description", formData.description);
     formDataToSend.append("category", formData.category);
     formDataToSend.append("condition", formData.condition);
     formDataToSend.append("location", formData.location);
     formDataToSend.append("userEmail", userEmail);
-
-    // Append tags as JSON string
     formDataToSend.append("tags", JSON.stringify(formData.tags));
-
-    // Append contact preferences as JSON string
     formDataToSend.append("contactPrefs", JSON.stringify(formData.contactPrefs));
-
-    // Append each image
     formData.images.forEach((image) => {
       formDataToSend.append("images", image);
     });
@@ -92,6 +82,9 @@ export default function PostItem() {
 };
 
   return (
+    <div className="home-container">
+      {/* HEADER */}
+      <Header />
     <div className="wrapper">
       <h1>Post an Item</h1>
       <form className="form" onSubmit={handleSubmit}>
@@ -159,6 +152,7 @@ export default function PostItem() {
 
         <button type="submit" className="submitBtn">Post Item</button>
       </form>
+    </div>
     </div>
   );
 }

@@ -11,6 +11,10 @@
   --gap: 14px;
   --max-width: 720px;
 }
+html {
+  scrollbar-gutter: stable; /* Modern browsers */
+  overflow-y: scroll;       /* Fallback */
+}
 .wrapper{
   max-width: var(--max-width);
   margin: 28px auto;

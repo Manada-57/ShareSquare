@@ -1,30 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Explore.css";
-
+import Header from "../Homedash/Header.jsx";
 export default function Explore() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null); // For modal
-
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/explore")
       .then((res) => setPosts(res.data))
       .catch((err) => console.error("Failed to fetch posts", err));
   }, []);
-
   return (
+  <div className="home-container">
+          {/* HEADER */}
+          <Header />
     <div className="explore-page">
-      {/* Header */}
       <div className="explore-header">
         <h2>🔍 Explore</h2>
         <p>Discover random posts from the community</p>
       </div>
-
-      {/* Divider */}
       <div className="explore-divider"></div>
-
-      {/* Posts grid */}
       <div className="post-grid">
         {posts.length > 0 ? (
           posts.map((post, index) =>
@@ -57,8 +53,6 @@ export default function Explore() {
           </div>
         )}
       </div>
-
-      {/* Modal for Post Details */}
       {selectedPost && (
         <div
           className="modal-overlay"
@@ -66,8 +60,7 @@ export default function Explore() {
         >
           <div
             className="modal-content"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-          >
+            onClick={(e) => e.stopPropagation()}          >
             <span
               className="close-btn"
               onClick={() => setSelectedPost(null)}
@@ -75,7 +68,7 @@ export default function Explore() {
               ✖
             </span>
             <img
-              src={selectedPost.image} // Use Cloudinary URL
+              src={selectedPost.image}
               alt="Post"
               className="modal-image"
             />
@@ -87,6 +80,7 @@ export default function Explore() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
