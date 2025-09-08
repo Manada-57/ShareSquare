@@ -10,11 +10,13 @@ import ServiceQuote from "./mainproject/Servicequote.jsx";
 import EndPage from "./mainproject/End.jsx";
 import Home from "./Homedash/Homepage.jsx";
 import PostItem from "./Homedash/Postitem.jsx";
-import Profile from "./Homedash/Profile.jsx";
+import Profile from "./Homedash/Newprofile.jsx";
 import ChatBox from "./Homedash/Chatbox.jsx";
 import Explore from "./explore/Explore.jsx";
 import Premium from "./post/premium.jsx";
 import PaymentSuccess from "./post/PaymentSuccess.jsx";
+import ProfilePage from "./Homedash/Newprofile.jsx";
+import EditProfile from "./Homedash/Editprofile.jsx";
 function App() {
   return (
     
@@ -42,6 +44,8 @@ function App() {
       <Route path="/explore" element={<Explore />} />
       <Route path="/premium" element={<Premium />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/newprofile" element={<ProfilePage />} />
+      <Route path="/editprofile" element={<EditProfile />} />
     </Routes>
   );
 }

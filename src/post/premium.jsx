@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import styles from "./PremiumSubscription.module.css"; // keep original CSS
-import { SiStripe } from "react-icons/si"; // Stripe icon
+import styles from "./PremiumSubscription.module.css"; 
+import { SiStripe } from "react-icons/si";
 
 export default function PremiumSubscription() {
   const [planType, setPlanType] = useState("");
-  const [days, setDays] = useState(1);
+  const [days, setDays] = useState(1); // FIX: added missing state
 
   const pricing = {
-    Expensive: 1000, // in rupees
+    Expensive: 1000, 
     Medium: 500,
     Small: 200,
   };
@@ -18,20 +18,22 @@ export default function PremiumSubscription() {
       return;
     }
 
-    const amount = pricing[planType] * days; // rupees, backend converts to paise
+    const amount = pricing[planType] * days;
 
     try {
       const res = await fetch("http://localhost:5000/api/make-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, productName: `Subscription: ${planType}` }),
+        body: JSON.stringify({
+          amount,
+          productName: `Subscription: ${planType}`,
+        }),
       });
 
       const data = await res.json();
 
       if (data.url) {
-        // Redirect user to Stripe Checkout
-        window.location.href = data.url;
+        window.location.href = data.url; // Redirect to Stripe Checkout
       } else {
         alert("Failed to create payment session");
       }

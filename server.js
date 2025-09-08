@@ -17,6 +17,10 @@ import nodemailer from "nodemailer";
 import crypto from "crypto";
 import moment from "moment";
 import Verification from './models/verification.js';
+import Stripe from 'stripe';
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY); // <-- your Stripe secret key from .env
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -75,6 +79,7 @@ mongoose.connect(mongoURI)
 io.on("connection", (socket) => {
   console.log("🟢 User connected:", socket.id);
   socket.on("chat-message", (data) => io.emit("chat-message", data));
+
   socket.on("disconnect", () => console.log("🔴 User disconnected:", socket.id));
 });
 
@@ -107,6 +112,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+
 app.get('/api/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
@@ -114,6 +120,45 @@ app.get('/api/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
   });
 });
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
+app.get('/auth/linkedin', passport.authenticate('linkedin'));
+app.get(
+  '/auth/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
+app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+app.get(
+  '/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: 'http://localhost:5173/login' }),
+  (req, res) => {
+    if (req.user && req.user.email) {
+      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+    } else {
+      res.redirect('http://localhost:5173/login');
+    }
+  }
+);
+
 app.post('/api/verify/sendc', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required.' });
@@ -189,7 +234,14 @@ app.post('/api/post', upload.array('images', 5), async (req, res) => {
     res.status(500).json({ success:false, error: err.message });
   }
 });
-
+app.post("/api/users/editprofile/:id", async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ message: "Update failed", error: err.message });
+  }
+});
 app.get('/api/posts', async (req, res) => {
   const { email } = req.query;
   try {
@@ -226,6 +278,7 @@ app.get("/api/user", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json({
+      id:user._id,
       username: user.username,
       name: user.name,
       email: user.email,
@@ -240,15 +293,33 @@ app.get("/api/user", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+app.post("/api/make-payment", async (req, res) => {
+  try {
+    const { amount, productName } = req.body;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'inr',
+          product_data: { name: productName },
+          unit_amount: amount * 100, // rupees -> paise
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `http://localhost:5173/payment-success?product=${encodeURIComponent(productName)}`,
+      cancel_url: 'http://localhost:5173/payment-cancel',
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Payment failed' });
+  }
+});
+
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
-// ---------------- START SERVER ----------------
-app.listen(5000)
-  .on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`Port ${5000} is already in use!`);
-    }
-  });
-

@@ -91,7 +91,7 @@ const Home = () => {
             />
             {showMenu && (
               <div className="dropdown-menu">
-                <p onClick={() => navigate("/profile")}>Profile</p>
+                <p onClick={() => navigate("/newprofile")}>Profile</p>
                 <p onClick={handleLogout}>Logout</p>
               </div>
             )}
@@ -123,7 +123,7 @@ const Home = () => {
                   <h3>{post.title || "Untitled"}</h3>
                   <p
                     className="post-user clickable"
-                    onClick={() => navigate(`/profile/${post.email}`)}
+                    onClick={() => navigate(`/newprofile/${post.email}`)}
                     title={post.email} // optional tooltip showing email
                   >
                     👤 {post.username || post.email?.split("@")[0] || "Unknown"}

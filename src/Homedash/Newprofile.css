@@ -1,0 +1,91 @@
+.github-style-container {
+  display: flex;
+  background-color: #0d1117;
+  color: #c9d1d9;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+}
+
+.sidebar {
+  width: 250px;
+  padding-right: 30px;
+}
+
+.avatar {
+  width: 100%;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.sidebar h2 {
+  margin: 10px 0 5px;
+}
+
+.sidebar p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.sidebar button {
+  margin-top: 10px;
+  background-color: #238636;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-form input,
+.edit-form select {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  border-radius: 4px;
+}
+
+.edit-form button {
+  background-color: #238636;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.edit-form button[type="submit"]:hover{
+  background-color: #175a28;
+}
+.main-section {
+  flex: 1;
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.post-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.post-card h4 {
+  margin: 0 0 5px;
+  color: #58a6ff;
+}
+
+.post-card p {
+  margin: 0 0 10px;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+}
