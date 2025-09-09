@@ -38,6 +38,7 @@ const Header = () => {
         <h1 className="app-name">ShareSquare</h1>
         <nav>
           <ul>
+            <li onClick={() => navigate("/home")}>Home</li>
             <li onClick={() => navigate("/post")}>Post</li>
             <li onClick={() => navigate("/explore")}>Explore</li>
             <li onClick={() => navigate("/premium")}>Premium</li>
@@ -53,7 +54,7 @@ const Header = () => {
 
       {/* Right side icons */}
       <div className="header-right">
-        <FaRegCommentAlt className="icon" title="Messages" />
+        <FaRegCommentAlt className="icon" title="Messages" onClick={()=>navigate("/chatbox")} />
         <FaBell className="icon" title="Notifications" />
         <FaTh className="icon" title="Apps" />
 
