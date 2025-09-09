@@ -1,84 +1,127 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Profile.css";
-
+import Header from "./Header.jsx";
 export default function Profile() {
-  const [posts, setPosts] = useState([]);
-  const [followers, setFollowers] = useState(0);
-  const [following, setFollowing] = useState(0);
-  const [userData, setUserData] = useState(null);
-
   const user = JSON.parse(sessionStorage.getItem("user"));
   const email = user?.email;
 
-  useEffect(() => {
-    if (email) {
-      // Fetch user's posts
-      axios
-        .get(`http://localhost:5000/api/posts?email=${email}`)
-        .then((res) => setPosts(res.data))
-        .catch((err) => console.error(err));
+  const [userData, setUserData] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({});
 
-      // Fetch user's profile data (followers/following)
-      axios
-        .get(`http://localhost:5000/api/user?email=${email}`)
-        .then((res) => {
-          setUserData(res.data);
-          setFollowers(res.data.followers || 0);
-          setFollowing(res.data.following || 0);
-        })
-        .catch((err) => console.error(err));
-    }
+  useEffect(() => {
+    if (!email) return;
+    axios
+      .get(`http://localhost:5000/api/user?email=${email}`)
+      .then((res) => {
+        setUserData(res.data);
+        setFormData({
+          name: res.data.name || "",
+          bio: res.data.bio || "",
+        });
+      })
+      .catch((err) => console.error(err));
+    axios
+      .get(`http://localhost:5000/api/posts?email=${email}`)
+      .then((res) => setPosts(res.data))
+      .catch((err) => console.error(err));
   }, [email]);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(
+        `http://localhost:5000/api/users/editprofile/${userData?.email}`,
+        formData
+      );
+      setUserData({ ...userData, ...formData });
+      setEditing(false);
+    } catch (err) {
+      console.error("Update failed", err);
+    }
+  };
+
   return (
-    <div className="profile-page">
-      {/* Header */}
-      <div className="profile-header">
-        <div className="profile-pic">
-          <img src="https://via.placeholder.com/150" alt="Profile" />
-        </div>
-        <div className="profile-details">
-          <div className="profile-top">
-            <h2>{userData?.username || email?.split("@")[0]}</h2>
-            <button className="edit-btn">Edit Profile</button>
-          </div>
-          <div className="profile-stats">
+        <div className="home-container">
+      {/* HEADER */}
+      <Header />
+    <div className="profile-container">
+      <div className="sidebar">
+        <div className="profile-card">
+          <img
+            src={userData?.profilePic || "/default-avatar.png"}
+            alt="Profile"
+            className="avatar"
+          />
+          {editing ? (
+            <form onSubmit={handleSave} className="edit-form">
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Name"
+                className="input-field"
+              />
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                placeholder="Bio"
+                className="textarea-field"
+              />
+              <div className="form-buttons">
+                <button type="submit" className="save-btn">Save</button>
+                <button
+                  type="button"
+                  onClick={() => setEditing(false)}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <h2>{userData?.name || email.split("@")[0]}</h2>
+              <p className="username">{userData?.username }</p>
+              <p className="email">{userData?.email}</p>
+              <p className="bio">{userData?.bio}</p>
+              <button onClick={() => setEditing(true)} className="edit-btn">
+                Edit Profile
+              </button>
+            </>
+          )}
+          <div className="followers-info">
             <span><strong>{posts.length}</strong> posts</span>
-            <span><strong>{followers}</strong> followers</span>
-            <span><strong>{following}</strong> following</span>
-          </div>
-          <div className="profile-bio">
-            <p><strong></strong></p>
-            <p></p>
+            <span><strong>{userData?.followers || 0}</strong> followers</span>
+            <span><strong>{userData?.following || 0}</strong> following</span>
           </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="profile-divider"></div>
-
-      {/* Posts grid */}
-      <div className="post-grid">
+      <div className="main-section">
+        <h3>Your Posts</h3>
         {posts.length > 0 ? (
-          posts.map((post, index) =>
-            post.images?.map((filename, i) => (
-              <div key={`${index}-${i}`} className="post-item">
-                <img
-                  src={filename} // GridFS route
-                  alt={post.title}
-                />
-              </div>
-            ))
-          )
-        ) : (
-          <div className="no-posts">
-            <h3>Share Photos</h3>
-            <p>When you share photos, they will appear on your profile.</p>
-            <button>Share your first photo</button>
+          <div className="post-grid">
+            {posts.map((post) =>
+              post.images.map((img, idx) => (
+                <div key={idx} className="post-item">
+                  <img src={img} alt={post.title} />
+                </div>
+              ))
+            )}
           </div>
+        ) : (
+          <p>No posts yet.</p>
         )}
       </div>
+    </div>
     </div>
   );
 }

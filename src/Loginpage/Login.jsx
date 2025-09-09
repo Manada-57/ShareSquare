@@ -62,9 +62,8 @@ const Login = () => {
                       <div className="social-buttons">
                          <a className="google" href="http://localhost:5000/auth/google"><img src={google} alt="Google" /> Google</a>
                          <a className="github" href="http://localhost:5000/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
-                         <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a>
-                      </div>
-                      </div>
+                         <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a></div>
+           </div>
           <p className="switch-link">
             Don’t have an account? <Link to="/signup">Signup</Link>
           </p>
