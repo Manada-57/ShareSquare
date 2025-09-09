@@ -38,6 +38,7 @@ function App() {
       <Route path="/post" element={<PostItem />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/chatbox/:email" element={<ChatBox />} />
+      <Route path="/chatbox" element={<ChatBox />} /> 
       <Route path="/explore" element={<Explore />} />
       <Route path="/user/:email" element={<UserProfile />} />
     </Routes>

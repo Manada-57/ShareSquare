@@ -252,19 +252,28 @@ app.put("/api/users/editprofile/:email", async (req, res) => {
 app.get('/api/explore', async (req, res) => {
   try {
     const posts = await Post.aggregate([{ $sample: { size: 20 } }]);
+    const userEmails = posts.map(p => p.userEmail);
+    const users = await User.find({ email: { $in: userEmails } }).select("email name");
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.email] = u.username;
+    });
     const formattedPosts = posts.map(post => ({
       _id: post._id,
       title: post.title,
       description: post.description,
       email: post.userEmail,
+      username: userMap[post.userEmail] || post.userEmail.split("@")[0], // fallback
       images: post.images
     }));
+
     res.json(formattedPosts);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch explore posts' });
   }
 });
+
 app.get("/api/user", async (req, res) => {
   try {
     const { email } = req.query;
@@ -302,17 +311,25 @@ app.get("/api/chats/:userEmail", async (req, res) => {
     const messages = await Message.find({
       $or: [{ sender: userEmail }, { receiver: userEmail }],
     }).sort({ timestamp: -1 });
+
     const chatsMap = {};
-    messages.forEach((msg) => {
+
+    for (const msg of messages) {
       const otherUser = msg.sender === userEmail ? msg.receiver : msg.sender;
+
       if (!chatsMap[otherUser]) {
+        // ✅ Fetch username from User collection
+        const user = await User.findOne({ email: otherUser }).select("name");
+
         chatsMap[otherUser] = {
           email: otherUser,
+          name: user ? user.name : otherUser.split("@")[0], // fallback if no user found
           lastMessage: msg.text,
           lastTime: msg.timestamp,
         };
       }
-    });
+    }
+
     const chats = Object.values(chatsMap);
     res.json(chats);
   } catch (err) {
@@ -320,6 +337,7 @@ app.get("/api/chats/:userEmail", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch chats" });
   }
 });
+
 server.listen(5000, () => {
   console.log("Server running on port 5000");
 });

@@ -34,10 +34,10 @@ export default function Explore() {
                   }
                 >
                   <img
-                    src={imageUrl} // Use Cloudinary URL directly
+                    src={imageUrl} 
                     alt={post.title || "Post image"}
                   />
-                  <p className="author">👤 {post.email || "Unknown user"}</p>
+                  <p className="author">👤 {post.username|| post.email}</p>
                 </div>
               ))
             ) : (
