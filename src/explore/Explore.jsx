@@ -7,7 +7,7 @@ export default function Explore() {
   const [selectedPost, setSelectedPost] = useState(null); // For modal
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/explore")
+      .get("https://sharesquare-y50q.onrender.com/api/explore")
       .then((res) => setPosts(res.data))
       .catch((err) => console.error("Failed to fetch posts", err));
   }, []);

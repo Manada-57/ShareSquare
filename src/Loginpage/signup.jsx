@@ -43,7 +43,7 @@ const Signup = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/verify/sendc', { email });
+      await axios.post('https://sharesquare-y50q.onrender.com/api/verify/sendc', { email });
       setMessage('✅ Verification code sent to your email.');
       setVerificationStep(true);
     } catch (err) {
@@ -56,8 +56,8 @@ const Signup = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/verify/check', { email, code });
-      const res = await axios.post('http://localhost:5000/api/signup', {
+      await axios.post('https://sharesquare-y50q.onrender.com/api/verify/check', { email, code });
+      const res = await axios.post('https://sharesquare-y50q.onrender.com/api/signup', {
         name,
         email,
         password,
@@ -123,9 +123,9 @@ const Signup = () => {
             <div className="social-login">
               <p>Or sign up with</p>
               <div className="social-buttons">
-                <a className="google" href="http://localhost:5000/auth/google"><img src={google} alt="Google" /> Google</a>
-                <a className="github" href="http://localhost:5000/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
-                <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a></div>
+                <a className="google" href="https://sharesquare-y50q.onrender.com/auth/google"><img src={google} alt="Google" /> Google</a>
+                <a className="github" href="https://sharesquare-y50q.onrender.com/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
+                <a className="linkedin" href="https://sharesquare-y50q.onrender.com/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a></div>
             </div>
             <p className="switch-link">Already have an account? <Link to="/login">Login</Link></p>
           </form>

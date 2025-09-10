@@ -23,7 +23,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5000/api/logout");
+      await axios.get("https://sharesquare-y50q.onrender.com/api/logout");
       sessionStorage.removeItem("user");
       navigate("/signup", { replace: true });
     } catch (error) {

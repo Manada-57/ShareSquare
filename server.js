@@ -134,36 +134,36 @@ app.get('/auth/google',
 );
 app.get(
   '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5000/login' }),
+  passport.authenticate('google', { failureRedirect: 'https://sharesquare-y50q.onrender.com/login' }),
   (req, res) => {
     if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5000/login?email=${encodeURIComponent(req.user.email)}`);
+      res.redirect(`https://sharesquare-y50q.onrender.com/login?email=${encodeURIComponent(req.user.email)}`);
     } else {
-      res.redirect('http://localhost:5173/login');
+      res.redirect('https://sharesquare-y50q.onrender.com/login');
     }
   }
 );
 app.get('/auth/linkedin', passport.authenticate('linkedin'));
 app.get(
   '/auth/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5173/login' }),
+  passport.authenticate('linkedin', { failureRedirect: 'https://sharesquare-y50q.onrender.com/login' }),
   (req, res) => {
     if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+      res.redirect(`https://sharesquare-y50q.onrender.com?email=${encodeURIComponent(req.user.email)}`);
     } else {
-      res.redirect('http://localhost:5173/login');
+      res.redirect('https://sharesquare-y50q.onrender.com/login');
     }
   }
 );
 app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 app.get(
   '/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: 'http://localhost:5173/login' }),
+  passport.authenticate('github', { failureRedirect: 'https://sharesquare-y50q.onrender.com/login' }),
   (req, res) => {
     if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+      res.redirect(`https://sharesquare-y50q.onrender.com/login?email=${encodeURIComponent(req.user.email)}`);
     } else {
-      res.redirect('http://localhost:5173/login');
+      res.redirect('https://sharesquare-y50q.onrender.com/login');
     }
   }
 );

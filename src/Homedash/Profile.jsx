@@ -14,7 +14,7 @@ export default function Profile() {
   useEffect(() => {
     if (!email) return;
     axios
-      .get(`http://localhost:5000/api/user?email=${email}`)
+      .get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`)
       .then((res) => {
         setUserData(res.data);
         setFormData({
@@ -24,7 +24,7 @@ export default function Profile() {
       })
       .catch((err) => console.error(err));
     axios
-      .get(`http://localhost:5000/api/posts?email=${email}`)
+      .get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`)
       .then((res) => setPosts(res.data))
       .catch((err) => console.error(err));
   }, [email]);
@@ -37,7 +37,7 @@ export default function Profile() {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:5000/api/users/editprofile/${userData?.email}`,
+        `https://sharesquare-y50q.onrender.com/api/users/editprofile/${userData?.email}`,
         formData
       );
       setUserData({ ...userData, ...formData });

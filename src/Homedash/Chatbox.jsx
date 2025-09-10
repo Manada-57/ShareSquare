@@ -20,7 +20,7 @@ export default function ChatPage() {
 
   // Init socket
   useEffect(() => {
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io("https://sharesquare-y50q.onrender.com");
     setSocket(newSocket);
     return () => newSocket.disconnect();
   }, []);
@@ -40,7 +40,7 @@ export default function ChatPage() {
     const fetchChats = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/chats/${currentUser}`
+          `https://sharesquare-y50q.onrender.com/api/chats/${currentUser}`
         );
         setChats(res.data); // [{email, name, lastMessage, lastTime}]
       } catch (err) {
@@ -57,7 +57,7 @@ export default function ChatPage() {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/messages?user1=${currentUser}&user2=${receiverEmail}`
+          `https://sharesquare-y50q.onrender.com/api/messages?user1=${currentUser}&user2=${receiverEmail}`
         );
         setMessages(res.data);
       } catch (err) {

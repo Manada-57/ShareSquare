@@ -29,7 +29,7 @@ const Login = () => {
     const password = e.target[1].value;
 
     try {
-      const res = await axios.post('http://localhost:5000/api/login',
+      const res = await axios.post('https://sharesquare-y50q.onrender.com/api/login',
         { email, password });
       if (res.status === 200) {
         sessionStorage.setItem('user', JSON.stringify(res.data.user));
@@ -60,9 +60,9 @@ const Login = () => {
           <div className="social-login">
             <p>Or login with:</p>
                       <div className="social-buttons">
-                         <a className="google" href="http://localhost:5000/auth/google"><img src={google} alt="Google" /> Google</a>
-                         <a className="github" href="http://localhost:5000/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
-                         <a className="linkedin" href="http://localhost:5000/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a></div>
+                         <a className="google" href="https://sharesquare-y50q.onrender.com/auth/google"><img src={google} alt="Google" /> Google</a>
+                         <a className="github" href="https://sharesquare-y50q.onrender.com/auth/github"><img src={github} alt="GitHub" /> GitHub</a>
+                         <a className="linkedin" href="https://sharesquare-y50q.onrender.com/auth/linkedin"><img src={linked} alt="LinkedIn" /> LinkedIn</a></div>
            </div>
           <p className="switch-link">
             Don’t have an account? <Link to="/signup">Signup</Link>
