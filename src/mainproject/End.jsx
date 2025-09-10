@@ -1,4 +1,4 @@
-import styles from "./End.Module.css";
+import styles from "./End.module.css";
 import React from "react";
 import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router-dom";
