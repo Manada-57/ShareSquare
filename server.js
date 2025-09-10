@@ -349,6 +349,10 @@ app.get("/api/chats/:userEmail", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch chats" });
   }
 });
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.use(express.static(path.join(__dirname, "dist")));
 
 app.get(/.*/, (req, res) => {
