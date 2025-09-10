@@ -1,0 +1,61 @@
+/* FeatureSection.module.css */
+.featuresection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 70px;
+  padding-top: 40px;
+  gap: 40px;
+  flex-wrap: wrap;
+  top: 0;
+  padding-bottom: 20px;
+  /* Mild orange background */
+ background: linear-gradient(to bottom right, #e0f7fa, #f1f8e9);
+}
+
+.featureimage img {
+  width: 100%;
+  max-width: 500px;
+  height: 600px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+}
+
+.featuretext {
+  flex: 1;
+  min-width: 300px;
+}
+
+.featuretext h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  line-height: 1.4;
+ 
+}
+
+.highlight {
+  color: #007bff; /* or any brand color */
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #ff7a00;
+}
+
+.featurebox {
+  background-color: white;
+  padding: 20px 25px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  border-left: 6px solid #007bff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.featurebox h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #333;
+}
+
+.featurebox p {
+  font-size: 16px;
+  color: #555;
+}

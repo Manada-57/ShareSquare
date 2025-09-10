@@ -1,0 +1,34 @@
+.hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  border-top-width: 50px;
+}
+.nav{
+  position:relative;
+}
+.hero Img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(70%);
+  position: absolute;
+}
+
+.herocontent {
+  position: relative;
+
+  color: white;
+  text-align: center;
+ top: 50%;
+  transform: translateY(-50%);
+}
+
+.herocontent h1 {
+  font-size: 50px;
+  margin-bottom: 20px;
+}
+
+.herocontent p {
+  font-size: 1.2rem;
+}

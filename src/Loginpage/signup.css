@@ -1,0 +1,175 @@
+/* Container setup */
+.signup-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef2f3, #d4dbe0);
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+}
+
+/* Signup form styling */
+.signup-form {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 420px;
+}
+
+.signup-form h2 {
+  text-align: center;
+  font-size: 30px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Input styling */
+.signup-form input {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: 0.3s ease;
+}
+
+.signup-form input:focus {
+  border-color: #4f46e5;
+  outline: none;
+  box-shadow: 0 0 5px rgba(79, 70, 229, 0.3);
+}
+
+/* Submit button */
+.signup-form button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  background-color: #4f46e5;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signup-form button[type="submit"]:hover {
+  background-color: #3730a3;
+}
+
+/* Social login section */
+.social-signup {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.social-signup p {
+  margin-bottom: 10px;
+  color: #555;
+  font-weight: 500;
+}
+
+.social-signup button {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.social-signup button:hover {
+  transform: scale(1.02);
+}
+
+.google {
+  background-color: white;
+}
+
+.github {
+  background-color: white;
+}
+
+.linkedin {
+  background-color: white;
+}
+
+/* Link to login */
+.signup-form p {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+  color: #555;
+}
+
+.signup-form a {
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-form a:hover {
+  text-decoration: underline;
+}
+
+/* Password checklist */
+.password-checklist {
+  margin-top: -10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.password-checklist div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.password-checklist .valid {
+  color: green;
+}
+
+.password-checklist .invalid {
+  color: #999;
+}
+
+.password-checklist i {
+  font-size: 16px;
+}
+
+/* Confirm Password success */
+input.confirm-match {
+  border-color: green;
+  box-shadow: 0 0 5px rgba(0, 128, 0, 0.3);
+}
+
+/* Tick mark style */
+.tick-mark {
+  font-weight: bold;
+  margin-left: auto;
+}
+.social-buttons a {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.social-buttons img {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}

@@ -1,0 +1,154 @@
+.wrapper {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 30px 60px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+}
+
+.let {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 40px;
+}
+
+.type {
+  color: #f1f1f1;
+  font-size: 42px;
+  font-weight: 600;
+}
+
+.circle {
+  background-color: orange;
+  color: white;
+  border-radius: 100px;
+  font-size: 14px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  margin-right: 55px;
+  text-decoration: none;
+}
+
+.circle:hover {
+  background-color: white;
+  color: orange;
+}
+
+.circle h2 {
+  margin: 0;
+}
+
+.footerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: space-between;
+  padding: 40px 0;
+  border-top: 1px solid #333;
+}
+
+.brandSection {
+  flex: 1;
+  min-width: 200px;
+}
+
+.logo {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.para {
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.socials svg {
+  margin-right: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  color: white;
+}
+
+.socials svg:hover {
+  transform: scale(1.2);
+  color: orange;
+}
+
+.linkGroup {
+  flex: 1;
+  min-width: 150px;
+}
+
+.linkGroup h4 {
+  color: orange;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.linkGroup p {
+  margin: 6px 0;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.linkGroup p:hover {
+  color: orange;
+}
+
+.subscribe {
+  flex: 1;
+  min-width: 200px;
+}
+
+.subscribe h4 {
+  color: orange;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.inputGroup {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  padding: 0;
+  max-width: 250px;
+}
+
+.inputGroup input {
+  border: none;
+  outline: none;
+  padding: 10px;
+  flex: 1;
+  font-size: 14px;
+}
+
+.inputGroup button {
+  background: orange;
+  border: none;
+  padding: 10px 14px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.inputGroup button:hover {
+  background: darkorange;
+}
+
+.bottomBar {
+  border-top: 1px solid #333;
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #aaa;
+  flex-wrap: wrap;
+}
