@@ -18,13 +18,19 @@ import nodemailer from "nodemailer";
 import crypto from "crypto";
 import moment from "moment";
 import Verification from './models/verification.js';
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
+    origin: "*", // allow all for now
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(express.json());
@@ -34,7 +40,13 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false }
 }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -62,7 +74,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-const mongoURI = 'mongodb+srv://jseetharaman07bcs27:cooDGXdEE4Z6mJet@sharesquare.tkw31yh.mongodb.net/ShareSquare';
+const mongoURI =process.env.MONGODB_URI;
 mongoose.connect(mongoURI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error(err));
@@ -122,10 +134,10 @@ app.get('/auth/google',
 );
 app.get(
   '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
+  passport.authenticate('google', { failureRedirect: 'http://localhost:5000/login' }),
   (req, res) => {
     if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+      res.redirect(`http://localhost:5000/login?email=${encodeURIComponent(req.user.email)}`);
     } else {
       res.redirect('http://localhost:5173/login');
     }
@@ -336,6 +348,11 @@ app.get("/api/chats/:userEmail", async (req, res) => {
     console.error("Error fetching chats:", err);
     res.status(500).json({ error: "Failed to fetch chats" });
   }
+});
+app.use(express.static(path.join(__dirname, "dist")));
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 server.listen(5000, () => {

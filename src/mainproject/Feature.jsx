@@ -1,11 +1,12 @@
-import styles from './Feature.module.css'; // make sure this CSS file exists
+import styles from './Feature.module.css';
+import featureImg from '../assets/exchange.png'
 export default function feature() {
   return (
     <div className={styles.featuresection}>
       {/* Left side image */}
       <div className={styles.featureimage}>
         <img
-          src="./src/assets/exchange.png" // replace with correct image path
+          src={featureImg} // replace with correct image path
           alt="App Preview"
         />
       </div>
