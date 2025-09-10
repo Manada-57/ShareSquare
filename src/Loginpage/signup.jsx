@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './Signup.css';
+import './signup.css';
 import signupImage from '../assets/signup_left_half.png';
 import google from '../assets/download.jpeg';
 import linked from '../assets/linked.png';
