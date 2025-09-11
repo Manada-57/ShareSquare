@@ -24,7 +24,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://localhost:5000/auth/google/callback'
+  callbackURL: 'https://sharesquare-y50q.onrender.com/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value;
@@ -52,7 +52,7 @@ passport.use(new GoogleStrategy({
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:5000/auth/github/callback',
+  callbackURL: 'https://sharesquare-y50q.onrender.com/auth/github/callback',
   scope: ['user:email']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
@@ -84,7 +84,7 @@ passport.use('linkedin', new OpenIDConnectStrategy({
   tokenURL: 'https://www.linkedin.com/oauth/v2/accessToken',
   clientID: process.env.LINKEDIN_CLIENT_ID,
   clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-  callbackURL: 'http://localhost:5000/auth/linkedin/callback',
+  callbackURL: 'https://sharesquare-y50q.onrender.com/auth/linkedin/callback',
   scope: ['openid', 'profile', 'email']
 }, async (issuer, sub, profile, jwtClaims, accessToken, refreshToken, done) => {
   try {
