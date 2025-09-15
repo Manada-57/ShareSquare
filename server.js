@@ -139,19 +139,19 @@ app.get(
     if (req.user && req.user.email) {
       res.redirect(`http://localhost:5000/login?email=${encodeURIComponent(req.user.email)}`);
     } else {
-      res.redirect('http://localhost:5173/login');
+      res.redirect('http://localhost:5000/login');
     }
   }
 );
 app.get('/auth/linkedin', passport.authenticate('linkedin'));
 app.get(
   '/auth/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5173/login' }),
+  passport.authenticate('linkedin', { failureRedirect: 'http://localhost:5000/login' }),
   (req, res) => {
     if (req.user && req.user.email) {
-      res.redirect(`http://localhost:5173/login?email=${encodeURIComponent(req.user.email)}`);
+      res.redirect(`http://localhost:5000/login?email=${encodeURIComponent(req.user.email)}`);
     } else {
-      res.redirect('http://localhost:5173/login');
+      res.redirect('http://localhost:5000/login');
     }
   }
 );
@@ -293,15 +293,16 @@ app.get("/api/user", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json({
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-      profilePic: user.profilePic,
-      followers: user.followersList.length,
-      following: user.followingList.length,
-      followersList: user.followersList,
-    });
+  username: user.username,
+  name: user.name,
+  email: user.email,
+  bio: user.bio,
+  profilePic: user.profilePic,
+  followers: user.followersList ? user.followersList.length : 0,
+  following: user.followingList ? user.followingList.length : 0,
+  followersList: user.followersList || [],
+  followingList: user.followingList || [],
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });

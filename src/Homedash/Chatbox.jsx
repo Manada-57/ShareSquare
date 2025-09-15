@@ -10,7 +10,7 @@ export default function ChatPage() {
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
-
+  const [receiverName, setReceiverName] = useState("");
   const [socket, setSocket] = useState(null);
   const [chats, setChats] = useState([]); // sidebar list
   const [receiverEmail, setReceiverEmail] = useState(null);
@@ -24,8 +24,6 @@ export default function ChatPage() {
     setSocket(newSocket);
     return () => newSocket.disconnect();
   }, []);
-
-  // Sync receiverEmail with URL param
   useEffect(() => {
     if (receiverEmailParam) {
       setReceiverEmail(receiverEmailParam);
@@ -33,8 +31,35 @@ export default function ChatPage() {
       setReceiverEmail(null);
     }
   }, [receiverEmailParam]);
+useEffect(() => {
+  if (receiverEmailParam) {
+    setReceiverEmail(receiverEmailParam);
 
-  // Fetch chat list (sidebar)
+    // Try to find from sidebar chats first
+    const found = chats.find((c) => c.email === receiverEmailParam);
+    if (found?.name) {
+      setReceiverName(found.name);
+    } else {
+      // Fallback: fetch from backend
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get(
+            `http://localhost:5000/api/user?email=${receiverEmailParam}`
+          );
+          setReceiverName(res.data.name || receiverEmailParam);
+        } catch (err) {
+          console.error(err);
+          setReceiverName(receiverEmailParam);
+        }
+      };
+      fetchUser();
+    }
+  } else {
+    setReceiverEmail(null);
+    setReceiverName("");
+  }
+}, [receiverEmailParam, chats]);
+
   useEffect(() => {
     if (!currentUser) return;
     const fetchChats = async () => {
@@ -42,7 +67,7 @@ export default function ChatPage() {
         const res = await axios.get(
           `http://localhost:5000/api/chats/${currentUser}`
         );
-        setChats(res.data); // [{email, name, lastMessage, lastTime}]
+        setChats(res.data);
       } catch (err) {
         console.error(err);
       }
@@ -77,10 +102,41 @@ export default function ChatPage() {
       ) {
         setMessages((prev) => [...prev, msg]);
       }
-    });
+            // --- Update sidebar chats (last message + last time) ---
+      setChats((prevChats) => {
+        const otherUser =
+          msg.sender === currentUser ? msg.receiver : msg.sender;
 
+        const existing = prevChats.find((c) => c.email === otherUser);
+
+        let updatedChats;
+        if (existing) {
+          // Update existing chat
+          updatedChats = prevChats.map((c) =>
+            c.email === otherUser
+              ? { ...c, lastMessage: msg.text, lastTime: msg.timestamp }
+              : c
+          );
+        } else {
+          // Add new chat
+          updatedChats = [
+            ...prevChats,
+            {
+              email: otherUser,
+              name: msg.sender === currentUser ? receiverName : msg.sender, // fallback
+              lastMessage: msg.text,
+              lastTime: msg.timestamp,
+            },
+          ];
+        }
+        // Sort chats by latest message time
+        return updatedChats.sort(
+          (a, b) => new Date(b.lastTime) - new Date(a.lastTime)
+        );
+      });
+    });
     return () => socket.off("chatMessage");
-  }, [socket, currentUser, receiverEmail]);
+  }, [socket, currentUser, receiverEmail, receiverName]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -128,7 +184,7 @@ export default function ChatPage() {
                   {chat.name?.[0] || chat.email[0]}
                 </div>
                 <div className="chat-info">
-                  <p className="chat-name">{chat.name || chat.email}</p>
+                  <p className="chat-name">{chat.name}</p>
                   <p className="chat-last">
                     {chat.lastMessage || "No messages yet"}
                   </p>
@@ -151,12 +207,7 @@ export default function ChatPage() {
           {receiverEmail ? (
             <>
               <div className="chat-header">
-                <h3>
-                  {
-                    chats.find((c) => c.email === receiverEmail)?.name ||
-                    receiverEmail
-                  }
-                </h3>
+                <h3>{receiverName}</h3>
               </div>
               <div className="chat-messages">
                 {messages.map((msg, idx) => (
