@@ -244,12 +244,29 @@ app.get('/api/posts', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.get("/api/posts/search", async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.json([]);
+
+    const regex = new RegExp(query, "i"); // case-insensitive search
+    const posts = await Post.find({
+      $or: [{ title: regex }, { description: regex }]
+    }).limit(50);
+
+    res.json(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.put("/api/users/editprofile/:email", async (req, res) => {
   try {
     const updatedUser = await User.findOneAndUpdate(
-      { email: req.params.email },   
-      req.body,                      
-      { new: true }                  
+      { email: req.params.email },
+      req.body,
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
@@ -261,6 +278,7 @@ app.put("/api/users/editprofile/:email", async (req, res) => {
     res.status(500).json({ message: "Update failed", error: err.message });
   }
 });
+
 app.get('/api/explore', async (req, res) => {
   try {
     const posts = await Post.aggregate([{ $sample: { size: 20 } }]);
@@ -297,6 +315,7 @@ app.get("/api/user", async (req, res) => {
   name: user.name,
   email: user.email,
   bio: user.bio,
+  mobilenumber:user.mobileNumber,
   profilePic: user.profilePic,
   followers: user.followersList ? user.followersList.length : 0,
   following: user.followingList ? user.followingList.length : 0,

@@ -15,6 +15,7 @@ import Profile from "./Homedash/Profile.jsx";
 import ChatBox from "./Homedash/Chatbox.jsx";
 import Explore from "./explore/Explore.jsx";
 import UserProfile from "./Homedash/UserProfile.jsx";
+import SearchResults from "./Homedash/SearchResults.jsx";
 function App() {
   return (
     
@@ -41,6 +42,7 @@ function App() {
       <Route path="/chatbox" element={<ChatBox />} /> 
       <Route path="/explore" element={<Explore />} />
       <Route path="/user/:email" element={<UserProfile />} />
+      <Route path="/search" element={<SearchResults />} />
     </Routes>
   );
 }

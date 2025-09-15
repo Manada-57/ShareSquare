@@ -9,8 +9,14 @@ const Header = () => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Hide menu when clicking outside
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+    setSearchQuery("");
+  };
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -48,10 +54,14 @@ const Header = () => {
 
       {/* Search bar */}
       <div className="header-search">
-        <FaSearch className="search-icon" />
-        <input type="text" placeholder="Search" />
+         <form onSubmit={handleSearch} style={{ display: "flex" }}>
+        <input type="text" placeholder="Search Products" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  <button type="submit">
+            <FaSearch />
+          </button>
+       </form>   
       </div>
-
+ 
       {/* Right side icons */}
       <div className="header-right">
         <FaRegCommentAlt className="icon" title="Messages" onClick={()=>navigate("/chatbox")} />
