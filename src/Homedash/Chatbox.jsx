@@ -17,15 +17,11 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
-
-  // Init socket
   useEffect(() => {
     const newSocket = io("https://sharesquare-y50q.onrender.com");
     setSocket(newSocket);
     return () => newSocket.disconnect();
   }, []);
-
-  // Sync receiverEmail with URL param
   useEffect(() => {
     if (receiverEmailParam) {
       setReceiverEmail(receiverEmailParam);
@@ -33,8 +29,6 @@ export default function ChatPage() {
       setReceiverEmail(null);
     }
   }, [receiverEmailParam]);
-
-  // Fetch chat list (sidebar)
   useEffect(() => {
     if (!currentUser) return;
     const fetchChats = async () => {
@@ -42,15 +36,13 @@ export default function ChatPage() {
         const res = await axios.get(
           `https://sharesquare-y50q.onrender.com/api/chats/${currentUser}`
         );
-        setChats(res.data); // [{email, name, lastMessage, lastTime}]
+        setChats(res.data);
       } catch (err) {
         console.error(err);
       }
     };
     fetchChats();
   }, [currentUser]);
-
-  // Fetch messages for selected chat
   useEffect(() => {
     if (!socket || !currentUser || !receiverEmail) return;
 
@@ -65,11 +57,7 @@ export default function ChatPage() {
       }
     };
     fetchMessages();
-
-    // Join socket room
     socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
-
-    // Listen for new messages
     socket.on("chatMessage", (msg) => {
       if (
         (msg.sender === currentUser && msg.receiver === receiverEmail) ||
@@ -78,16 +66,11 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, msg]);
       }
     });
-
     return () => socket.off("chatMessage");
   }, [socket, currentUser, receiverEmail]);
-
-  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Send message
   const sendMessage = (e) => {
     e.preventDefault();
     if (!message.trim() || !socket) return;
@@ -102,7 +85,6 @@ export default function ChatPage() {
     socket.emit("chatMessage", msgObj);
     setMessage("");
   };
-
   return (
     <div className="home-container">
       {/* HEADER */}
