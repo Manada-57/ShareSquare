@@ -10,7 +10,7 @@ export default function ChatPage() {
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
-
+  const [receiverName, setReceiverName] = useState("");
   const [socket, setSocket] = useState(null);
   const [chats, setChats] = useState([]); // sidebar list
   const [receiverEmail, setReceiverEmail] = useState(null);
@@ -29,6 +29,35 @@ export default function ChatPage() {
       setReceiverEmail(null);
     }
   }, [receiverEmailParam]);
+useEffect(() => {
+  if (receiverEmailParam) {
+    setReceiverEmail(receiverEmailParam);
+
+    // Try to find from sidebar chats first
+    const found = chats.find((c) => c.email === receiverEmailParam);
+    if (found?.name) {
+      setReceiverName(found.name);
+    } else {
+      // Fallback: fetch from backend
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get(
+            `https://sharesquare-y50q.onrender.com/api/user?email=${receiverEmailParam}`
+          );
+          setReceiverName(res.data.name || receiverEmailParam);
+        } catch (err) {
+          console.error(err);
+          setReceiverName(receiverEmailParam);
+        }
+      };
+      fetchUser();
+    }
+  } else {
+    setReceiverEmail(null);
+    setReceiverName("");
+  }
+}, [receiverEmailParam, chats]);
+
   useEffect(() => {
     if (!currentUser) return;
     const fetchChats = async () => {
@@ -43,6 +72,8 @@ export default function ChatPage() {
     };
     fetchChats();
   }, [currentUser]);
+
+  // Fetch messages for selected chat
   useEffect(() => {
     if (!socket || !currentUser || !receiverEmail) return;
 
@@ -57,7 +88,11 @@ export default function ChatPage() {
       }
     };
     fetchMessages();
+
+    // Join socket room
     socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
+
+    // Listen for new messages
     socket.on("chatMessage", (msg) => {
       if (
         (msg.sender === currentUser && msg.receiver === receiverEmail) ||
@@ -65,12 +100,48 @@ export default function ChatPage() {
       ) {
         setMessages((prev) => [...prev, msg]);
       }
+            // --- Update sidebar chats (last message + last time) ---
+      setChats((prevChats) => {
+        const otherUser =
+          msg.sender === currentUser ? msg.receiver : msg.sender;
+
+        const existing = prevChats.find((c) => c.email === otherUser);
+
+        let updatedChats;
+        if (existing) {
+          // Update existing chat
+          updatedChats = prevChats.map((c) =>
+            c.email === otherUser
+              ? { ...c, lastMessage: msg.text, lastTime: msg.timestamp }
+              : c
+          );
+        } else {
+          // Add new chat
+          updatedChats = [
+            ...prevChats,
+            {
+              email: otherUser,
+              name: msg.sender === currentUser ? receiverName : msg.sender, // fallback
+              lastMessage: msg.text,
+              lastTime: msg.timestamp,
+            },
+          ];
+        }
+        // Sort chats by latest message time
+        return updatedChats.sort(
+          (a, b) => new Date(b.lastTime) - new Date(a.lastTime)
+        );
+      });
     });
     return () => socket.off("chatMessage");
-  }, [socket, currentUser, receiverEmail]);
+  }, [socket, currentUser, receiverEmail, receiverName]);
+
+  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Send message
   const sendMessage = (e) => {
     e.preventDefault();
     if (!message.trim() || !socket) return;
@@ -85,6 +156,7 @@ export default function ChatPage() {
     socket.emit("chatMessage", msgObj);
     setMessage("");
   };
+
   return (
     <div className="home-container">
       {/* HEADER */}
@@ -110,7 +182,7 @@ export default function ChatPage() {
                   {chat.name?.[0] || chat.email[0]}
                 </div>
                 <div className="chat-info">
-                  <p className="chat-name">{chat.name || chat.email}</p>
+                  <p className="chat-name">{chat.name}</p>
                   <p className="chat-last">
                     {chat.lastMessage || "No messages yet"}
                   </p>
@@ -133,12 +205,7 @@ export default function ChatPage() {
           {receiverEmail ? (
             <>
               <div className="chat-header">
-                <h3>
-                  {
-                    chats.find((c) => c.email === receiverEmail)?.name ||
-                    receiverEmail
-                  }
-                </h3>
+                <h3>{receiverName}</h3>
               </div>
               <div className="chat-messages">
                 {messages.map((msg, idx) => (
