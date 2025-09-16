@@ -100,15 +100,15 @@ const ProfilePage = () => {
           {editing && (
             <form onSubmit={handleSubmit} className="edit-form">
               <input name="name" value={formData.name || ''} onChange={handleChange} placeholder="Name" />
-              <input name="mobileNumber" value={user.mobileNumber || ''} onChange={handleChange} placeholder="Mobile Number" />
-              <select name="gender" value={user.gender || ''} onChange={handleChange}>
+              <input name="mobileNumber" value={formData.mobileNumber || ''} onChange={handleChange} placeholder="Mobile Number" />
+              <select name="gender" value={formData.gender || ''} onChange={handleChange}>
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
-              <input name="country" value={user.country || ''} onChange={handleChange} placeholder="Country" />
-              <input name="state" value={user.state || ''} onChange={handleChange} placeholder="State" />
-              <input name="city" value={user.city || ''} onChange={handleChange} placeholder="City" />
+              <input name="country" value={formData.country || ''} onChange={handleChange} placeholder="Country" />
+              <input name="state" value={formData.state || ''} onChange={handleChange} placeholder="State" />
+              <input name="city" value={formData.city || ''} onChange={handleChange} placeholder="City" />
               <button type="submit">Save</button>
             </form>
           )}
