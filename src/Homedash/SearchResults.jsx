@@ -90,7 +90,7 @@ const SearchResults = () => {
                 <div className="card-image">
                   <img
                     src={
-                      post.images?.[0].startsWith("https")
+                      post.images?.[0].startsWith("http")
                         ? post.images[0]
                         : `https://sharesquare-y50q.onrender.com/${post.images[0]}`
                     }
