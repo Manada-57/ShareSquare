@@ -89,13 +89,11 @@ const SearchResults = () => {
               >
                 <div className="card-image">
                   <img
-                    src={
-                      post.images?.[0].startsWith("http")
-                        ? post.images[0]
-                        : `https://sharesquare-y50q.onrender.com/${post.images[0]}`
-                    }
-                    alt={post.title}
-                  />
+  src={post.images?.[0] || "/default-product.png"}
+  alt={post.title}
+  onError={(e) => (e.target.src = "/default-product.png")}
+/>
+
                 </div>
                 <div className="card-details">
                   <h3>{post.title}</h3>
