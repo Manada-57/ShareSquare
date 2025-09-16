@@ -244,12 +244,28 @@ app.get('/api/posts', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.get("/api/posts/search", async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.json([]);
+
+    const regex = new RegExp(query, "i"); // case-insensitive search
+    const posts = await Post.find({
+      $or: [{ title: regex }, { description: regex }]
+    }).limit(50);
+
+    res.json(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 app.put("/api/users/editprofile/:email", async (req, res) => {
   try {
     const updatedUser = await User.findOneAndUpdate(
-      { email: req.params.email },   
-      req.body,                      
-      { new: true }                  
+      { email: req.params.email },
+      req.body,
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
@@ -285,7 +301,6 @@ app.get('/api/explore', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch explore posts' });
   }
 });
-
 app.get("/api/user", async (req, res) => {
   try {
     const { email } = req.query;
@@ -293,15 +308,17 @@ app.get("/api/user", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json({
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-      profilePic: user.profilePic,
-      followers: user.followersList.length,
-      following: user.followingList.length,
-      followersList: user.followersList,
-    });
+  username: user.username,
+  name: user.name,
+  email: user.email,
+  bio: user.bio,
+  mobilenumber:user.mobileNumber,
+  profilePic: user.profilePic,
+  followers: user.followersList ? user.followersList.length : 0,
+  following: user.followingList ? user.followingList.length : 0,
+  followersList: user.followersList || [],
+  followingList: user.followingList || [],
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
