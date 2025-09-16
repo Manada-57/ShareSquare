@@ -93,7 +93,6 @@ const SearchResults = () => {
   alt={post.title}
   onError={(e) => (e.target.src = "/default-product.png")}
 />
-
                 </div>
                 <div className="card-details">
                   <h3>{post.title}</h3>

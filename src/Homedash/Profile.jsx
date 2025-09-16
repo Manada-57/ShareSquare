@@ -5,20 +5,16 @@ import Header from './Header';
 
 const ProfilePage = () => {
   const storedUser = JSON.parse(sessionStorage.getItem("user"));
-  const email = storedUser?.email; // extract email
+  const email = storedUser?.email;
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [posts, setPosts] = useState([]);
-
-  // Function to fetch user and posts
   const fetchUserAndPosts = async () => {
     if (!email) return;
     try {
       const userRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`);
       setUser(userRes.data);
-
-      // Only update formData if editing, otherwise leave it empty
       if (editing) {
         setFormData({
           name: userRes.data.name || '',
