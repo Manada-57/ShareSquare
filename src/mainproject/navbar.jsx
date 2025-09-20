@@ -7,8 +7,8 @@ export default function Navbar() {
       <div className={styles.sub}>
         <div className={styles.leftLinks}>
           <Link to="/" className={`${styles.navItem} ${styles.active}`}>Home</Link>
-          <Link to="/explore" className={styles.navItem}>Explore</Link>
-          <Link to="/post" className={styles.navItem}>Post</Link>
+          <Link to="/signup" className={styles.navItem}>Explore</Link>
+          <Link to="/signup" className={styles.navItem}>Post</Link>
         </div>
 
         <div className={styles.logo}>

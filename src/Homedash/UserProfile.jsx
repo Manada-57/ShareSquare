@@ -2,58 +2,46 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./UserProfile.css";
-
 export default function UserProfile() {
   const { email } = useParams();
   const navigate = useNavigate();
-
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [userData, setUserData] = useState(null);
-  const [isConnected, setIsConnected] = useState(false); // follow status
-
+  const [isConnected, setIsConnected] = useState(false);
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
-
   useEffect(() => {
     if (email) {
-      // Fetch user's posts
       axios
         .get(`http://localhost:5000/api/posts?email=${email}`)
         .then((res) => setPosts(res.data))
         .catch((err) => console.error(err));
-
-      // Fetch user's profile data
       axios
         .get(`http://localhost:5000/api/user?email=${email}`)
         .then((res) => {
           setUserData(res.data);
           setFollowers(res.data.followers || 0);
           setFollowing(res.data.following || 0);
-          // check if current user follows this user
           setIsConnected(res.data.followersList?.includes(currentUser));
         })
         .catch((err) => console.error(err));
     }
   }, [email, currentUser]);
-
   const handleConnect = () => {
-    // Toggle connection
     axios
       .post(`http://localhost:5000/api/connect`, {
         currentUser,
         targetUser: email,
       })
       .then((res) => {
-        setIsConnected(res.data.connected); // backend returns true/false
+        setIsConnected(res.data.connected);
         setFollowers(res.data.followersCount);
       })
       .catch((err) => console.error(err));
   };
-
   const handleMessage = () => {
-    // Navigate to chat with this user
-    navigate(`/chatbox?user=${email}`);
+    navigate(`/chatbox/${email}`);
   };
 
   return (

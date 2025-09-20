@@ -8,7 +8,8 @@ import Vision from "./mainproject/Vision.jsx";
 import Anime from "./mainproject/Anime.jsx";
 import ServiceQuote from "./mainproject/Servicequote.jsx";
 import EndPage from "./mainproject/End.jsx";
-import Home from "./Homedash/Homepage.jsx";
+import Home from "./Homedash/Home.jsx";
+import Header from "./Homedash/Header.jsx";
 import PostItem from "./Homedash/Postitem.jsx";
 import Profile from "./Homedash/Newprofile.jsx";
 import ChatBox from "./Homedash/Chatbox.jsx";
@@ -40,7 +41,8 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/post" element={<PostItem />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/chatbox" element={<ChatBox />} />
+      <Route path="/chatbox/:email" element={<ChatBox />} />
+      <Route path="/chatbox" element={<ChatBox />} /> 
       <Route path="/explore" element={<Explore />} />
       <Route path="/premium" element={<Premium />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
