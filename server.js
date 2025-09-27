@@ -177,7 +177,7 @@ app.get('/api/current-user', (req, res) => {
 app.post('/api/verify/sendc', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required.' });
-  const code = crypto.randomInt(100000, 999999); // 6-digit code
+  const code = crypto.randomInt(100000, 999999);
   const expiry = moment().add(10, 'minutes').toDate();
   await Verification.findOneAndUpdate(
     { email },
@@ -249,7 +249,7 @@ app.get("/api/posts/search", async (req, res) => {
     const { query } = req.query;
     if (!query) return res.json([]);
 
-    const regex = new RegExp(query, "i"); // case-insensitive search
+    const regex = new RegExp(query, "i");
     const posts = await Post.find({
       $or: [{ title: regex }, { description: regex }]
     }).limit(50);
