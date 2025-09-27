@@ -281,28 +281,40 @@ app.put("/api/users/editprofile/:email", async (req, res) => {
 
 app.get('/api/explore', async (req, res) => {
   try {
-    const posts = await Post.aggregate([{ $sample: { size: 20 } }]);
+    const { city } = req.query;
+    let posts;
+    if (city) {
+      posts = await Post.find({
+        city: { $regex: new RegExp(city, "i") } 
+      }).limit(20);
+    } else {
+      posts = await Post.aggregate([{ $sample: { size: 20 } }]);
+    }
     const userEmails = posts.map(p => p.userEmail);
-    const users = await User.find({ email: { $in: userEmails } }).select("email name");
+    const users = await User.find({ email: { $in: userEmails } }).select("email username");
+
     const userMap = {};
     users.forEach(u => {
       userMap[u.email] = u.username;
     });
+
     const formattedPosts = posts.map(post => ({
       _id: post._id,
       title: post.title,
       description: post.description,
       email: post.userEmail,
       username: userMap[post.userEmail] || post.userEmail.split("@")[0], // fallback
-      images: post.images
+      images: post.images,
+      city: post.city || "Unknown" // 🆕 include city in response
     }));
 
     res.json(formattedPosts);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch explore posts' });
+    console.error("❌ Failed to fetch explore posts:", err);
+    res.status(500).json({ error: "Failed to fetch explore posts" });
   }
 });
+
 
 app.get("/api/user", async (req, res) => {
   try {
