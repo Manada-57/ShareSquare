@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Postitem.css";
 import Header from "./Header.jsx";
@@ -13,12 +13,42 @@ export default function PostItem() {
     category: "",
     condition: "",
     tags: [],
-    location: "",
+    location: "", // auto-filled with user city
     contactPrefs: [],
     images: [],
   });
 
   const availableTags = ["Exchangeable", "Borrow", "Sale"];
+
+  // 🔹 Auto-detect location when component mounts
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await axios.get(
+            `https://nominatim.openstreetmap.org/reverse`,
+            {
+              params: {
+                lat: latitude,
+                lon: longitude,
+                format: "json",
+              },
+            }
+          );
+          const city =
+            res.data.address.city ||
+            res.data.address.town ||
+            res.data.address.village ||
+            res.data.address.state ||
+            "Unknown";
+          setFormData((prev) => ({ ...prev, location: city }));
+        } catch (err) {
+          console.error("Location fetch failed:", err);
+        }
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -82,7 +112,7 @@ export default function PostItem() {
           category: "",
           condition: "",
           tags: [],
-          location: "",
+          location: formData.location, // keep detected city
           contactPrefs: [],
           images: [],
         });
@@ -172,13 +202,12 @@ export default function PostItem() {
               onChange={handleChange}
             />
 
-            <label>Location</label>
+            <label>Detected Location</label>
             <input
               type="text"
               name="location"
-              placeholder="City / Pincode"
               value={formData.location}
-              onChange={handleChange}
+              readOnly // user cannot edit
             />
 
             <label>Contact Preferences</label>

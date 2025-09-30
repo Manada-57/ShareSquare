@@ -366,6 +366,40 @@ app.get("/api/chats/:userEmail", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch chats" });
   }
 });
+app.post("/api/report", async (req, res) => {
+  try {
+    const { reporterEmail, reportedEmail, reason, otherReason } = req.body;
+
+    if (!reporterEmail || !reportedEmail || !reason) {
+      return res.status(400).json({ message: "Reporter, reported, and reason are required" });
+    }
+
+    // Validate reason
+    const validReasons = ["Spam", "Inappropriate Content", "Harassment", "Fake Post", "Others"];
+    if (!validReasons.includes(reason)) {
+      return res.status(400).json({ message: "Invalid reason selected" });
+    }
+
+    // If reason is Others, otherReason must be filled
+    if (reason === "Others" && (!otherReason || !otherReason.trim())) {
+      return res.status(400).json({ message: "Please provide a reason for 'Others'" });
+    }
+
+    const newReport = new Report({
+      reporterEmail,
+      reportedEmail,
+      reason,
+      otherReason: reason === "Others" ? otherReason : ""
+    });
+
+    await newReport.save();
+
+    res.status(201).json({ message: "Report submitted successfully" });
+  } catch (err) {
+    console.error("Error submitting report:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
