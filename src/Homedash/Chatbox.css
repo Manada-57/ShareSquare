@@ -176,3 +176,68 @@
     max-width: 80%;
   }
 }
+
+/* ---------- Report Modal / Three-dot button ---------- */
+.chat-header {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  position: relative; /* for absolute modal */
+}
+
+.chat-header-menu {
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.report-modal {
+  position: absolute;
+  top: 50px;         
+  right: 15px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 1000;
+  width: 220px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.report-modal h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+}
+
+.report-modal select,
+.report-modal textarea {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.report-modal textarea {
+  resize: vertical;
+  height: 60px;
+}
+
+.report-modal button {
+  margin-right: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.report-modal button:first-of-type {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+.report-modal button:last-of-type {
+  background-color: #ccc;
+  color: #000;
+}

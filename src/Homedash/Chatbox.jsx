@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import "./Chatbox.css";
 import Header from "./Header.jsx";
+import { FaEllipsisV } from "react-icons/fa"; // three-dot icon
 
 export default function ChatPage() {
   const { email: receiverEmailParam } = useParams();
@@ -12,11 +13,16 @@ export default function ChatPage() {
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
   const [receiverName, setReceiverName] = useState("");
   const [socket, setSocket] = useState(null);
-  const [chats, setChats] = useState([]); // sidebar list
+  const [chats, setChats] = useState([]);
   const [receiverEmail, setReceiverEmail] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+
+  // Report modal states
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
 
   // Init socket
   useEffect(() => {
@@ -24,6 +30,7 @@ export default function ChatPage() {
     setSocket(newSocket);
     return () => newSocket.disconnect();
   }, []);
+
   useEffect(() => {
     if (receiverEmailParam) {
       setReceiverEmail(receiverEmailParam);
@@ -31,34 +38,33 @@ export default function ChatPage() {
       setReceiverEmail(null);
     }
   }, [receiverEmailParam]);
-useEffect(() => {
-  if (receiverEmailParam) {
-    setReceiverEmail(receiverEmailParam);
 
-    // Try to find from sidebar chats first
-    const found = chats.find((c) => c.email === receiverEmailParam);
-    if (found?.name) {
-      setReceiverName(found.name);
+  useEffect(() => {
+    if (receiverEmailParam) {
+      setReceiverEmail(receiverEmailParam);
+
+      const found = chats.find((c) => c.email === receiverEmailParam);
+      if (found?.name) {
+        setReceiverName(found.name);
+      } else {
+        const fetchUser = async () => {
+          try {
+            const res = await axios.get(
+              `http://localhost:5000/api/user?email=${receiverEmailParam}`
+            );
+            setReceiverName(res.data.name || receiverEmailParam);
+          } catch (err) {
+            console.error(err);
+            setReceiverName(receiverEmailParam);
+          }
+        };
+        fetchUser();
+      }
     } else {
-      // Fallback: fetch from backend
-      const fetchUser = async () => {
-        try {
-          const res = await axios.get(
-            `http://localhost:5000/api/user?email=${receiverEmailParam}`
-          );
-          setReceiverName(res.data.name || receiverEmailParam);
-        } catch (err) {
-          console.error(err);
-          setReceiverName(receiverEmailParam);
-        }
-      };
-      fetchUser();
+      setReceiverEmail(null);
+      setReceiverName("");
     }
-  } else {
-    setReceiverEmail(null);
-    setReceiverName("");
-  }
-}, [receiverEmailParam, chats]);
+  }, [receiverEmailParam, chats]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -75,7 +81,7 @@ useEffect(() => {
     fetchChats();
   }, [currentUser]);
 
-  // Fetch messages for selected chat
+  // Fetch messages & socket listeners
   useEffect(() => {
     if (!socket || !currentUser || !receiverEmail) return;
 
@@ -91,10 +97,8 @@ useEffect(() => {
     };
     fetchMessages();
 
-    // Join socket room
     socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
 
-    // Listen for new messages
     socket.on("chatMessage", (msg) => {
       if (
         (msg.sender === currentUser && msg.receiver === receiverEmail) ||
@@ -102,43 +106,40 @@ useEffect(() => {
       ) {
         setMessages((prev) => [...prev, msg]);
       }
-            // --- Update sidebar chats (last message + last time) ---
+
       setChats((prevChats) => {
         const otherUser =
           msg.sender === currentUser ? msg.receiver : msg.sender;
-
         const existing = prevChats.find((c) => c.email === otherUser);
 
         let updatedChats;
         if (existing) {
-          // Update existing chat
           updatedChats = prevChats.map((c) =>
             c.email === otherUser
               ? { ...c, lastMessage: msg.text, lastTime: msg.timestamp }
               : c
           );
         } else {
-          // Add new chat
           updatedChats = [
             ...prevChats,
             {
               email: otherUser,
-              name: msg.sender === currentUser ? receiverName : msg.sender, // fallback
+              name: msg.sender === currentUser ? receiverName : msg.sender,
               lastMessage: msg.text,
               lastTime: msg.timestamp,
             },
           ];
         }
-        // Sort chats by latest message time
         return updatedChats.sort(
           (a, b) => new Date(b.lastTime) - new Date(a.lastTime)
         );
       });
     });
+
     return () => socket.off("chatMessage");
   }, [socket, currentUser, receiverEmail, receiverName]);
 
-  // Auto scroll to bottom
+  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -161,11 +162,10 @@ useEffect(() => {
 
   return (
     <div className="home-container">
-      {/* HEADER */}
       <Header />
 
       <div className="chat-container">
-        {/* LEFT SIDEBAR */}
+        {/* Sidebar */}
         <div className="chat-sidebar">
           <h2>Chats</h2>
           <div className="chat-list">
@@ -180,14 +180,10 @@ useEffect(() => {
                   navigate(`/chatbox/${chat.email}`);
                 }}
               >
-                <div className="chat-avatar">
-                  {chat.name?.[0] || chat.email[0]}
-                </div>
+                <div className="chat-avatar">{chat.name?.[0] || chat.email[0]}</div>
                 <div className="chat-info">
                   <p className="chat-name">{chat.name}</p>
-                  <p className="chat-last">
-                    {chat.lastMessage || "No messages yet"}
-                  </p>
+                  <p className="chat-last">{chat.lastMessage || "No messages yet"}</p>
                 </div>
                 <span className="chat-time">
                   {chat.lastTime
@@ -202,20 +198,75 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* RIGHT CHAT WINDOW */}
+        {/* Chat window */}
         <div className="chat-window">
           {receiverEmail ? (
             <>
               <div className="chat-header">
                 <h3>{receiverName}</h3>
+                <div className="chat-header-menu">
+                  <FaEllipsisV
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowReportModal(!showReportModal)}
+                  />
+                </div>
               </div>
+
+              {/* Report Modal */}
+              {showReportModal && (
+                <div className="report-modal">
+                  <h4>Report {receiverName}</h4>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                  >
+                    <option value="">Select Reason</option>
+                    <option value="Spam">Spam</option>
+                    <option value="Inappropriate Content">Inappropriate Content</option>
+                    <option value="Harassment">Harassment</option>
+                    <option value="Fake Post">Fake Post</option>
+                    <option value="Others">Others</option>
+                  </select>
+
+                  {reportReason === "Others" && (
+                    <textarea
+                      placeholder="Type reason..."
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                    />
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      if (!reportReason) return alert("Select a reason");
+                      try {
+                        await axios.post("http://localhost:5000/api/report", {
+                          reporterEmail: currentUser,
+                          reportedEmail: receiverEmail,
+                          reason: reportReason,
+                          otherReason: reportReason === "Others" ? customReason : "",
+                        });
+                        alert("Report submitted successfully!");
+                        setShowReportModal(false);
+                        setReportReason("");
+                        setCustomReason("");
+                      } catch (err) {
+                        console.error(err);
+                        alert("Failed to submit report.");
+                      }
+                    }}
+                  >
+                    Submit
+                  </button>
+                  <button onClick={() => setShowReportModal(false)}>Cancel</button>
+                </div>
+              )}
+
               <div className="chat-messages">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`chat-message ${
-                      msg.sender === currentUser ? "sent" : "received"
-                    }`}
+                    className={`chat-message ${msg.sender === currentUser ? "sent" : "received"}`}
                   >
                     <p>{msg.text}</p>
                     <span>
@@ -228,6 +279,7 @@ useEffect(() => {
                 ))}
                 <div ref={messagesEndRef}></div>
               </div>
+
               <form className="chat-input-form" onSubmit={sendMessage}>
                 <input
                   type="text"

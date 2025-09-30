@@ -8,7 +8,7 @@ export default function Explore() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [city, setCity] = useState(""); // 🆕 store city name
+  const [city, setCity] = useState("");
 
   useEffect(() => {
     if (navigator.geolocation) {
