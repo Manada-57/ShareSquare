@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import "./Chatbox.css";
 import Header from "./Header.jsx";
+import { FaEllipsisV } from "react-icons/fa"; // three-dot menu icon
 
 export default function ChatPage() {
   const { email: receiverEmailParam } = useParams();
@@ -12,52 +13,53 @@ export default function ChatPage() {
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
   const [receiverName, setReceiverName] = useState("");
   const [socket, setSocket] = useState(null);
-  const [chats, setChats] = useState([]); // sidebar list
+  const [chats, setChats] = useState([]);
   const [receiverEmail, setReceiverEmail] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+
+  // Report modal states
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
+
+  // Init socket
   useEffect(() => {
     const newSocket = io("https://sharesquare-y50q.onrender.com");
     setSocket(newSocket);
     return () => newSocket.disconnect();
   }, []);
+
+  // Handle receiver and fetch receiver name
   useEffect(() => {
     if (receiverEmailParam) {
       setReceiverEmail(receiverEmailParam);
+
+      const found = chats.find((c) => c.email === receiverEmailParam);
+      if (found?.name) {
+        setReceiverName(found.name);
+      } else {
+        const fetchUser = async () => {
+          try {
+            const res = await axios.get(
+              `https://sharesquare-y50q.onrender.com/api/user?email=${receiverEmailParam}`
+            );
+            setReceiverName(res.data.name || receiverEmailParam);
+          } catch (err) {
+            console.error(err);
+            setReceiverName(receiverEmailParam);
+          }
+        };
+        fetchUser();
+      }
     } else {
       setReceiverEmail(null);
+      setReceiverName("");
     }
-  }, [receiverEmailParam]);
-useEffect(() => {
-  if (receiverEmailParam) {
-    setReceiverEmail(receiverEmailParam);
+  }, [receiverEmailParam, chats]);
 
-    // Try to find from sidebar chats first
-    const found = chats.find((c) => c.email === receiverEmailParam);
-    if (found?.name) {
-      setReceiverName(found.name);
-    } else {
-      // Fallback: fetch from backend
-      const fetchUser = async () => {
-        try {
-          const res = await axios.get(
-            `https://sharesquare-y50q.onrender.com/api/user?email=${receiverEmailParam}`
-          );
-          setReceiverName(res.data.name || receiverEmailParam);
-        } catch (err) {
-          console.error(err);
-          setReceiverName(receiverEmailParam);
-        }
-      };
-      fetchUser();
-    }
-  } else {
-    setReceiverEmail(null);
-    setReceiverName("");
-  }
-}, [receiverEmailParam, chats]);
-
+  // Fetch chats
   useEffect(() => {
     if (!currentUser) return;
     const fetchChats = async () => {
@@ -73,68 +75,69 @@ useEffect(() => {
     fetchChats();
   }, [currentUser]);
 
-  // Fetch messages for selected chat
-  useEffect(() => {
-    if (!socket || !currentUser || !receiverEmail) return;
+  // Fetch messages & setup socket listeners
+useEffect(() => {
+  if (!socket || !currentUser || !receiverEmail) return;
 
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(
-          `https://sharesquare-y50q.onrender.com/api/messages?user1=${currentUser}&user2=${receiverEmail}`
-        );
-        setMessages(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchMessages();
+  // Join personal rooms
+  socket.emit("joinUserRoom", { email: currentUser }); // for notifications to yourself
+  socket.emit("joinUserRoom", { email: receiverEmail }); // ensure receiver is in their room
+  socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
 
-    // Join socket room
-    socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
+  // Fetch previous messages
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(
+        `https://sharesquare-y50q.onrender.com/api/messages?user1=${currentUser}&user2=${receiverEmail}`
+      );
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  fetchMessages();
 
-    // Listen for new messages
-    socket.on("chatMessage", (msg) => {
-      if (
-        (msg.sender === currentUser && msg.receiver === receiverEmail) ||
-        (msg.sender === receiverEmail && msg.receiver === currentUser)
-      ) {
-        setMessages((prev) => [...prev, msg]);
-      }
-            // --- Update sidebar chats (last message + last time) ---
+  // Listen for incoming messages
+  socket.on("chatMessage", (msg) => {
+    if (
+      (msg.sender === currentUser && msg.receiver === receiverEmail) ||
+      (msg.sender === receiverEmail && msg.receiver === currentUser)
+    ) {
+      setMessages((prev) => [...prev, msg]);
+
+      // Update sidebar chats
       setChats((prevChats) => {
-        const otherUser =
-          msg.sender === currentUser ? msg.receiver : msg.sender;
-
+        const otherUser = msg.sender === currentUser ? msg.receiver : msg.sender;
         const existing = prevChats.find((c) => c.email === otherUser);
 
         let updatedChats;
         if (existing) {
-          // Update existing chat
           updatedChats = prevChats.map((c) =>
             c.email === otherUser
               ? { ...c, lastMessage: msg.text, lastTime: msg.timestamp }
               : c
           );
         } else {
-          // Add new chat
           updatedChats = [
             ...prevChats,
             {
               email: otherUser,
-              name: msg.sender === currentUser ? receiverName : msg.sender, // fallback
+              name: msg.sender === currentUser ? receiverName : msg.sender,
               lastMessage: msg.text,
               lastTime: msg.timestamp,
             },
           ];
         }
-        // Sort chats by latest message time
         return updatedChats.sort(
           (a, b) => new Date(b.lastTime) - new Date(a.lastTime)
         );
       });
-    });
-    return () => socket.off("chatMessage");
-  }, [socket, currentUser, receiverEmail, receiverName]);
+    }
+  });
+
+  return () => socket.off("chatMessage");
+}, [socket, currentUser, receiverEmail, receiverName]);
+
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -157,13 +160,38 @@ useEffect(() => {
     setMessage("");
   };
 
+  // Submit report
+  const submitReport = async () => {
+    if (!reportReason) return alert("Select a reason");
+    try {
+      await axios.post("https://sharesquare-y50q.onrender.com/api/report", {
+        reporterEmail: currentUser,
+        reportedEmail: receiverEmail,
+        reason: reportReason,
+        otherReason: reportReason === "Others" ? customReason : "",
+      });
+      alert("Report submitted successfully!");
+      setShowReportModal(false);
+      setReportReason("");
+      setCustomReason("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit report.");
+    }
+  };
+
+  // Navigate to ViewPosts page
+  const handleRequest = () => {
+    if (!receiverEmail) return;
+    navigate(`/viewposts/${receiverEmail}`);
+  };
+
   return (
     <div className="home-container">
-      {/* HEADER */}
       <Header />
 
       <div className="chat-container">
-        {/* LEFT SIDEBAR */}
+        {/* Sidebar */}
         <div className="chat-sidebar">
           <h2>Chats</h2>
           <div className="chat-list">
@@ -178,14 +206,10 @@ useEffect(() => {
                   navigate(`/chatbox/${chat.email}`);
                 }}
               >
-                <div className="chat-avatar">
-                  {chat.name?.[0] || chat.email[0]}
-                </div>
+                <div className="chat-avatar">{chat.name?.[0] || chat.email[0]}</div>
                 <div className="chat-info">
                   <p className="chat-name">{chat.name}</p>
-                  <p className="chat-last">
-                    {chat.lastMessage || "No messages yet"}
-                  </p>
+                  <p className="chat-last">{chat.lastMessage || "No messages yet"}</p>
                 </div>
                 <span className="chat-time">
                   {chat.lastTime
@@ -200,13 +224,52 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* RIGHT CHAT WINDOW */}
+        {/* Chat window */}
         <div className="chat-window">
           {receiverEmail ? (
             <>
               <div className="chat-header">
                 <h3>{receiverName}</h3>
+                <div className="chat-header-menu">
+                  <button className="request-btn" onClick={handleRequest}>
+                    Request
+                  </button>
+                  <FaEllipsisV
+                    style={{ cursor: "pointer", marginLeft: "8px" }}
+                    onClick={() => setShowReportModal(!showReportModal)}
+                  />
+                </div>
               </div>
+
+              {/* Report Modal */}
+              {showReportModal && (
+                <div className="report-modal">
+                  <h4>Report {receiverName}</h4>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                  >
+                    <option value="">Select Reason</option>
+                    <option value="Spam">Spam</option>
+                    <option value="Inappropriate Content">Inappropriate Content</option>
+                    <option value="Harassment">Harassment</option>
+                    <option value="Fake Post">Fake Post</option>
+                    <option value="Others">Others</option>
+                  </select>
+
+                  {reportReason === "Others" && (
+                    <textarea
+                      placeholder="Type reason..."
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                    />
+                  )}
+
+                  <button onClick={submitReport}>Submit</button>
+                  <button onClick={() => setShowReportModal(false)}>Cancel</button>
+                </div>
+              )}
+
               <div className="chat-messages">
                 {messages.map((msg, idx) => (
                   <div
@@ -226,6 +289,7 @@ useEffect(() => {
                 ))}
                 <div ref={messagesEndRef}></div>
               </div>
+
               <form className="chat-input-form" onSubmit={sendMessage}>
                 <input
                   type="text"

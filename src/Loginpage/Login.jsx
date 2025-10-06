@@ -8,16 +8,11 @@ import linked from '../assets/linked.png';
 import github from '../assets/git.png';
 const Login = () => {
   const navigate = useNavigate();
-    // ✅ Capture email from query params (social login redirect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const email = params.get("email");
-
     if (email) {
-      // Save social login user in sessionStorage
       sessionStorage.setItem("user", JSON.stringify({ email }));
-
-      // Redirect to home
       navigate('/home', { replace: true });
     }
   }, [navigate]);
@@ -27,18 +22,20 @@ const Login = () => {
     e.preventDefault();
     const email = e.target[0].value;
     const password = e.target[1].value;
+try {
+  const res = await axios.post('https://sharesquare-y50q.onrender.com/api/login', { email, password });
 
-    try {
-      const res = await axios.post('https://sharesquare-y50q.onrender.com/api/login',
-        { email, password });
-      if (res.status === 200) {
-        sessionStorage.setItem('user', JSON.stringify(res.data.user));
-        navigate('/home'); // Redirect on successful login
-      }
-    } catch (err) {
-      alert(err);
-      console.error(err);
+  if (res.status === 200) {
+    if (res.data.user) {
+      sessionStorage.setItem('user', JSON.stringify(res.data.user));
     }
+    navigate(res.data.redirect);
+  }
+} catch (err) {
+  alert(err.response?.data?.message || "Login failed");
+  console.error(err);
+}
+
   };
 
   return (
