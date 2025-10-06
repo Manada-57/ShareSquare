@@ -8,7 +8,7 @@
     "start-frontend": "vite",
     "start-backend": "node server.js",
     "build": "vite build",
-    "start": "node server.js", 
+    "start": "node server.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -40,6 +40,7 @@
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.7.0",
+    "sib-api-v3-sdk": "^8.5.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },

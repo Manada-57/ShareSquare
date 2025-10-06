@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import "./Chatbox.css";
 import Header from "./Header.jsx";
-import { FaEllipsisV } from "react-icons/fa"; // three-dot icon
+import { FaEllipsisV } from "react-icons/fa"; // three-dot menu icon
 
 export default function ChatPage() {
   const { email: receiverEmailParam } = useParams();
@@ -31,14 +31,7 @@ export default function ChatPage() {
     return () => newSocket.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (receiverEmailParam) {
-      setReceiverEmail(receiverEmailParam);
-    } else {
-      setReceiverEmail(null);
-    }
-  }, [receiverEmailParam]);
-
+  // Handle receiver and fetch receiver name
   useEffect(() => {
     if (receiverEmailParam) {
       setReceiverEmail(receiverEmailParam);
@@ -66,6 +59,7 @@ export default function ChatPage() {
     }
   }, [receiverEmailParam, chats]);
 
+  // Fetch chats
   useEffect(() => {
     if (!currentUser) return;
     const fetchChats = async () => {
@@ -81,35 +75,39 @@ export default function ChatPage() {
     fetchChats();
   }, [currentUser]);
 
-  // Fetch messages & socket listeners
-  useEffect(() => {
-    if (!socket || !currentUser || !receiverEmail) return;
+  // Fetch messages & setup socket listeners
+useEffect(() => {
+  if (!socket || !currentUser || !receiverEmail) return;
 
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:5000/api/messages?user1=${currentUser}&user2=${receiverEmail}`
-        );
-        setMessages(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchMessages();
+  // Join personal rooms
+  socket.emit("joinUserRoom", { email: currentUser }); // for notifications to yourself
+  socket.emit("joinUserRoom", { email: receiverEmail }); // ensure receiver is in their room
+  socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
 
-    socket.emit("joinRoom", { user1: currentUser, user2: receiverEmail });
+  // Fetch previous messages
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/messages?user1=${currentUser}&user2=${receiverEmail}`
+      );
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  fetchMessages();
 
-    socket.on("chatMessage", (msg) => {
-      if (
-        (msg.sender === currentUser && msg.receiver === receiverEmail) ||
-        (msg.sender === receiverEmail && msg.receiver === currentUser)
-      ) {
-        setMessages((prev) => [...prev, msg]);
-      }
+  // Listen for incoming messages
+  socket.on("chatMessage", (msg) => {
+    if (
+      (msg.sender === currentUser && msg.receiver === receiverEmail) ||
+      (msg.sender === receiverEmail && msg.receiver === currentUser)
+    ) {
+      setMessages((prev) => [...prev, msg]);
 
+      // Update sidebar chats
       setChats((prevChats) => {
-        const otherUser =
-          msg.sender === currentUser ? msg.receiver : msg.sender;
+        const otherUser = msg.sender === currentUser ? msg.receiver : msg.sender;
         const existing = prevChats.find((c) => c.email === otherUser);
 
         let updatedChats;
@@ -134,12 +132,14 @@ export default function ChatPage() {
           (a, b) => new Date(b.lastTime) - new Date(a.lastTime)
         );
       });
-    });
+    }
+  });
 
-    return () => socket.off("chatMessage");
-  }, [socket, currentUser, receiverEmail, receiverName]);
+  return () => socket.off("chatMessage");
+}, [socket, currentUser, receiverEmail, receiverName]);
 
-  // Auto scroll
+
+  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -158,6 +158,32 @@ export default function ChatPage() {
 
     socket.emit("chatMessage", msgObj);
     setMessage("");
+  };
+
+  // Submit report
+  const submitReport = async () => {
+    if (!reportReason) return alert("Select a reason");
+    try {
+      await axios.post("http://localhost:5000/api/report", {
+        reporterEmail: currentUser,
+        reportedEmail: receiverEmail,
+        reason: reportReason,
+        otherReason: reportReason === "Others" ? customReason : "",
+      });
+      alert("Report submitted successfully!");
+      setShowReportModal(false);
+      setReportReason("");
+      setCustomReason("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit report.");
+    }
+  };
+
+  // Navigate to ViewPosts page
+  const handleRequest = () => {
+    if (!receiverEmail) return;
+    navigate(`/viewposts/${receiverEmail}`);
   };
 
   return (
@@ -205,8 +231,11 @@ export default function ChatPage() {
               <div className="chat-header">
                 <h3>{receiverName}</h3>
                 <div className="chat-header-menu">
+                  <button className="request-btn" onClick={handleRequest}>
+                    Request
+                  </button>
                   <FaEllipsisV
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", marginLeft: "8px" }}
                     onClick={() => setShowReportModal(!showReportModal)}
                   />
                 </div>
@@ -236,28 +265,7 @@ export default function ChatPage() {
                     />
                   )}
 
-                  <button
-                    onClick={async () => {
-                      if (!reportReason) return alert("Select a reason");
-                      try {
-                        await axios.post("http://localhost:5000/api/report", {
-                          reporterEmail: currentUser,
-                          reportedEmail: receiverEmail,
-                          reason: reportReason,
-                          otherReason: reportReason === "Others" ? customReason : "",
-                        });
-                        alert("Report submitted successfully!");
-                        setShowReportModal(false);
-                        setReportReason("");
-                        setCustomReason("");
-                      } catch (err) {
-                        console.error(err);
-                        alert("Failed to submit report.");
-                      }
-                    }}
-                  >
-                    Submit
-                  </button>
+                  <button onClick={submitReport}>Submit</button>
                   <button onClick={() => setShowReportModal(false)}>Cancel</button>
                 </div>
               )}
@@ -266,7 +274,9 @@ export default function ChatPage() {
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`chat-message ${msg.sender === currentUser ? "sent" : "received"}`}
+                    className={`chat-message ${
+                      msg.sender === currentUser ? "sent" : "received"
+                    }`}
                   >
                     <p>{msg.text}</p>
                     <span>

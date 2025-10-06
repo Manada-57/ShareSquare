@@ -3,10 +3,13 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import Post from './models/post.js';
 import User from './models/user.js';
+import Report from './models/report.js';
 import Message from './models/message.js';
+import Request from './models/request.js';
 import passport from 'passport';
 import './auth/passport-config.js';
 import dotenv from 'dotenv';
+import axios from 'axios';
 dotenv.config();
 import session from 'express-session';
 import multer from 'multer';
@@ -80,22 +83,34 @@ mongoose.connect(mongoURI)
   .catch(err => console.error(err));
 io.on("connection", (socket) => {
   console.log("User connected");
-  socket.on("joinRoom", ({ user1, user2 }) => {
-    const room = [user1, user2].sort().join("_");
-    socket.join(room);
+
+  // Join a personal room for notifications
+  socket.on("joinUserRoom", ({ email }) => {
+    socket.join(email); // each user joins a room named after their email
+    console.log(`${email} joined their personal room`);
   });
+
+  // Existing chat messages
   socket.on("chatMessage", async (msgObj) => {
     try {
       const msg = new Message(msgObj);
       await msg.save();
+
+      // Emit to the chat room (for chat page)
       const room = [msgObj.sender, msgObj.receiver].sort().join("_");
       io.to(room).emit("chatMessage", msg);
+
+      // Emit to receiver's personal room (for header red dot)
+      io.to(msgObj.receiver).emit("chatMessage", msg);
+
     } catch (err) {
       console.error("Error saving message:", err);
     }
   });
+
   socket.on("disconnect", () => console.log("User disconnected"));
 });
+
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, confirmpassword } = req.body;
   if (!name || !email || !password || !confirmpassword) return res.status(400).json({ message: 'Please fill all fields' });
@@ -112,16 +127,35 @@ app.post('/api/signup', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+const ADMIN_EMAIL = "admin@example.com";
+const ADMIN_PASS = "admin123";
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+      return res.status(200).json({
+        status: 'ok',
+        message: 'Admin login successful',
+        redirect: '/admin-dashboard'
+      });
+    }
     const user = await User.findOne({ email });
-    if (!user || user.password !== password) return res.status(401).json({ status:'error', message:'Invalid credentials' });
-    res.status(200).json({ status:'ok', message:'Login successful', user: { email: user.email } });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+    }
+
+    res.status(200).json({
+      status: 'ok',
+      message: 'Login successful',
+      redirect: '/home',
+      user: { email: user.email }
+    });
+
   } catch (err) {
-    res.status(500).json({ status:'error', message: err.message });
+    res.status(500).json({ status: 'error', message: err.message });
   }
-})
+});
+
 app.get('/api/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
@@ -174,27 +208,46 @@ app.get('/api/current-user', (req, res) => {
     res.status(401).json({ error: 'Not logged in' });
   }
 });
+// Send OTP using Brevo
 app.post('/api/verify/sendc', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required.' });
-  const code = crypto.randomInt(100000, 999999); // 6-digit code
+  // Generate 6-digit code
+  const code = crypto.randomInt(100000, 999999);
   const expiry = moment().add(10, 'minutes').toDate();
+  // Save/update in DB
   await Verification.findOneAndUpdate(
     { email },
     { code, expiresAt: expiry, verified: false },
     { upsert: true }
   );
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Your Verification Code',
-    text: `Your verification code is ${code}. It expires in 10 minutes.`
+  // Brevo email payload
+  const mailData = {
+    sender: { name: "My Student Project", email: process.env.BREVO_FROM_EMAIL },
+    to: [{ email }],
+    subject: "Your Verification Code",
+    htmlContent: `<p>Your verification code is <strong>${code}</strong>. It expires in 10 minutes.</p>`,
+    textContent: `Your verification code is ${code}. It expires in 10 minutes.`
   };
-  transporter.sendMail(mailOptions, (err) => {
-    if (err) return res.status(500).json({ message: 'Failed to send email.' });
+  try {
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      mailData,
+      {
+        headers: {
+          accept: 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        }
+      }
+    );
     res.status(200).json({ message: 'Verification code sent.' });
-  });
+  } catch (err) {
+    console.error('Brevo send error:', err.response?.data || err.message);
+    res.status(500).json({ message: 'Failed to send email.' });
+  }
 });
+// Verify OTP
 app.post('/api/verify/check', async (req, res) => {
   const { email, code } = req.body;
   const record = await Verification.findOne({ email });
@@ -412,6 +465,192 @@ app.post("/api/report", async (req, res) => {
     res.status(201).json({ message: "Report submitted successfully" });
   } catch (err) {
     console.error("Error submitting report:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+app.get("/api/admin/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete user by email
+app.delete("/api/admin/users/:email", async (req, res) => {
+  try {
+    await User.deleteOne({ email: req.params.email });
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get all reports
+app.get("/api/admin/reports", async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete report by ID
+app.delete("/api/admin/reports/:id", async (req, res) => {
+  try {
+    await Report.findByIdAndDelete(req.params.id);
+    res.json({ message: "Report deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+app.post("/api/request", async (req, res) => {
+  try {
+    const { postId, postTitle, requestType, requestedBy, acceptedBy } = req.body;
+
+    if (!postId || !postTitle || !requestType || !requestedBy || !acceptedBy) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Avoid duplicate pending requests
+    const existing = await Request.findOne({
+      postId,
+      requestedBy,
+      acceptedBy,
+      status: "Pending"
+    });
+    if (existing) {
+      return res.status(400).json({ message: "Request already sent and pending." });
+    }
+
+    const newRequest = new Request({
+      postId,
+      postTitle,
+      requestType,
+      requestedBy,
+      acceptedBy
+    });
+
+    await newRequest.save();
+    res.status(201).json({ message: "Request sent successfully", request: newRequest });
+  } catch (err) {
+    console.error("Error creating request:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ✅ 2. Fetch all requests for a user (to show incoming/outgoing)
+app.get("/api/requests/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // All requests where user is involved (either as sender or receiver)
+    const requests = await Request.find({
+      $or: [{ requestedBy: email }, { acceptedBy: email }]
+    }).sort({ createdAt: -1 });
+
+    res.json(requests);
+  } catch (err) {
+    console.error("Error fetching requests:", err);
+    res.status(500).json({ message: "Failed to fetch requests" });
+  }
+});
+// Send a new request
+app.post("/api/request/send", async (req, res) => {
+  try {
+    const { postId, postTitle, requestType, requesterEmail, ownerEmail } = req.body;
+
+    if (!postId || !postTitle || !requestType || !requesterEmail || !ownerEmail) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Avoid duplicate pending requests for same post and requester
+    const existing = await Request.findOne({
+      postId,
+      requesterEmail,
+      ownerEmail,
+      status: "Pending"
+    });
+
+    if (existing) {
+      return res.status(400).json({ message: "Request already sent and pending." });
+    }
+
+    const newRequest = new Request({
+      postId,
+      postTitle,
+      requestType,
+      requesterEmail,
+      ownerEmail
+    });
+
+    await newRequest.save();
+    res.status(201).json({ message: "Request sent successfully", request: newRequest });
+  } catch (err) {
+    console.error("Error sending request:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ✅ 3. Accept or Decline a request
+app.put("/api/request/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body; // "Accept" or "Decline"
+
+    if (!["Accept", "Decline"].includes(action)) {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    const updatedRequest = await Request.findByIdAndUpdate(
+      id,
+      { status: action === "Accept" ? "Accepted" : "Declined" },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    res.json({ message: `Request ${action.toLowerCase()}ed successfully`, request: updatedRequest });
+  } catch (err) {
+    console.error("Error updating request:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/api/request/user/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const requests = await Request.find({
+      $or: [{ requesterEmail: email }, { ownerEmail: email }],
+    }).sort({ createdAt: -1 });
+
+    res.json(requests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching requests" });
+  }
+});
+app.put("/api/request/action/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body;
+
+    const newStatus = action === "Accept" ? "Accepted" : "Rejected";
+    const updated = await Request.findByIdAndUpdate(
+      id,
+      { status: newStatus },
+      { new: true }
+    );
+
+    res.json(updated);
+  } catch (err) {
+    console.error("Error updating request:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

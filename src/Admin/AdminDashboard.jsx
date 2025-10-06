@@ -1,28 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./AdminDashboard.css";
 const API = "http://localhost:5000/api/admin";
+
 export default function AdminDashboard() {
   const [tab, setTab] = useState("users");
   const [users, setUsers] = useState([]);
-  const [complaints, setComplaints] = useState([]);
+  const [reports, setReports] = useState([]);
+
   useEffect(() => {
     fetchUsers();
-    fetchComplaints();
+    fetchReports();
   }, []);
 
+  // -------- USERS ----------
   const fetchUsers = async () => {
     try {
       const res = await axios.get(`${API}/users`);
       setUsers(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchComplaints = async () => {
-    try {
-      const res = await axios.get(`${API}/complaints`);
-      setComplaints(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -38,23 +33,38 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateComplaint = async (email, status) => {
+  // -------- REPORTS ----------
+  const fetchReports = async () => {
     try {
-      await axios.patch(`${API}/complaints/${email}`, { status });
-      fetchComplaints();
+      const res = await axios.get(`${API}/reports`);
+      setReports(res.data);
     } catch (err) {
       console.error(err);
     }
   };
 
+  const deleteReport = async (id) => {
+    if (!window.confirm("Delete this report?")) return;
+    try {
+      await axios.delete(`${API}/reports/${id}`);
+      fetchReports();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // -------- UI ----------
   return (
     <div style={{ padding: "20px" }}>
       <h1>Admin Dashboard</h1>
-      <div>
+
+      {/* Navigation */}
+      <div style={{ marginBottom: "20px" }}>
         <button onClick={() => setTab("users")}>Manage Users</button>
-        <button onClick={() => setTab("complaints")}>Manage Complaints</button>
+        <button onClick={() => setTab("reports")}>Manage Reports</button>
       </div>
 
+      {/* USERS TAB */}
       {tab === "users" && (
         <div>
           <h2>Users</h2>
@@ -79,28 +89,31 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {tab === "complaints" && (
+      {/* REPORTS TAB */}
+      {tab === "reports" && (
         <div>
-          <h2>Complaints</h2>
+          <h2>Reports</h2>
           <table border="1" cellPadding="10">
             <thead>
               <tr>
-                <th>User Email</th><th>Complaint</th><th>Status</th><th>Actions</th>
+                <th>Reporter</th>
+                <th>Reported</th>
+                <th>Reason</th>
+                <th>Other Reason</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {complaints.map((c) => (
-                <tr key={c._id}>
-                  <td>{c.userId?.email}</td>
-                  <td>{c.text}</td>
-                  <td>{c.status}</td>
+              {reports.map((r) => (
+                <tr key={r._id}>
+                  <td>{r.reporterEmail}</td>
+                  <td>{r.reportedEmail}</td>
+                  <td>{r.reason}</td>
+                  <td>{r.reason === "Others" ? r.otherReason : "-"}</td>
+                  <td>{new Date(r.createdAt).toLocaleString()}</td>
                   <td>
-                    <button onClick={() => updateComplaint(c.userId.email, "Verified")}>
-                      Verify
-                    </button>
-                    <button onClick={() => updateComplaint(c.userId.email, "Pending")}>
-                      Set Pending
-                    </button>
+                    <button onClick={() => deleteReport(r._id)}>Delete</button>
                   </td>
                 </tr>
               ))}

@@ -5,11 +5,13 @@
   font-family: Arial, sans-serif;
   background: #f9f9f9;
 }
+
 .chat-container {
   display: flex;
   flex: 1;         
   overflow: hidden;
 }
+
 .chat-sidebar {
   width: 300px;
   background: #fff;
@@ -79,6 +81,7 @@
   font-size: 0.8em;
   color: #888;
 }
+
 .chat-window {
   flex: 1;
   display: flex;
@@ -93,6 +96,17 @@
   background: #fff;
   flex-shrink: 0; 
   font-weight: bold;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  position: relative; /* for absolute modal */
+}
+
+.chat-header-menu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 
 .chat-messages {
@@ -129,6 +143,7 @@
   text-align: right;
   opacity: 0.8;
 }
+
 .chat-input-form {
   display: flex;
   padding: 10px;
@@ -168,28 +183,8 @@
   color: #777;
   font-size: 1.2em;
 }
-@media (max-width: 768px) {
-  .chat-sidebar {
-    width: 200px;
-  }
-  .chat-message {
-    max-width: 80%;
-  }
-}
 
-/* ---------- Report Modal / Three-dot button ---------- */
-.chat-header {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  position: relative; /* for absolute modal */
-}
-
-.chat-header-menu {
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
+/* ---------- Report Modal ---------- */
 .report-modal {
   position: absolute;
   top: 50px;         
@@ -240,4 +235,29 @@
 .report-modal button:last-of-type {
   background-color: #ccc;
   color: #000;
+}
+
+/* ---------- Request Button ---------- */
+.request-btn {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.request-btn:hover {
+  background-color: #45a049;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .chat-sidebar {
+    width: 200px;
+  }
+  .chat-message {
+    max-width: 80%;
+  }
 }
