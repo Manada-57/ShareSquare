@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./PremiumSubscription.module.css"; 
 import { SiStripe } from "react-icons/si";
 
 export default function PremiumSubscription() {
   const [planType, setPlanType] = useState("");
-  const [days, setDays] = useState(1); // FIX: added missing state
+  const [days, setDays] = useState(1);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
 
   const pricing = {
     Expensive: 1000, 
@@ -12,13 +14,48 @@ export default function PremiumSubscription() {
     Small: 200,
   };
 
+  // Get user info from sessionStorage
+  const currentUserEmail = JSON.parse(sessionStorage.getItem("user"))?.email;
+  const currentUserName = JSON.parse(sessionStorage.getItem("user"))?.name;
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!currentUserEmail) return;
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/subscription/${currentUserEmail}`);
+        const data = await res.json();
+        if (data.subscription && new Date(data.subscription.expiryDate) > new Date()) {
+          setIsSubscribed(true);
+          setSubscriptionInfo(data.subscription);
+        }
+      } catch (err) {
+        console.error("Error checking subscription:", err);
+      }
+    };
+
+    checkSubscription();
+  }, [currentUserEmail]);
+
   const handleStripePayment = async () => {
     if (!planType) {
       alert("Please select a subscription plan");
       return;
     }
+    
+    if (!currentUserEmail ) {
+      alert("User not logged in");
+      return;
+    }
+
+    if (isSubscribed) {
+      alert(`You already have an active subscription until ${new Date(subscriptionInfo.expiryDate).toLocaleDateString()}`);
+      return;
+    }
 
     const amount = pricing[planType] * days;
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + days); // calculate expiry date
 
     try {
       const res = await fetch("http://localhost:5000/api/make-payment", {
@@ -27,6 +64,11 @@ export default function PremiumSubscription() {
         body: JSON.stringify({
           amount,
           productName: `Subscription: ${planType}`,
+          userEmail: currentUserEmail,
+          name: currentUserName,
+          planType,
+          days,
+          expiryDate,
         }),
       });
 
@@ -35,7 +77,7 @@ export default function PremiumSubscription() {
       if (data.url) {
         window.location.href = data.url; // Redirect to Stripe Checkout
       } else {
-        alert("Failed to create payment session");
+        alert(data.error || "Failed to create payment session");
       }
     } catch (err) {
       console.error("Payment error:", err);
@@ -47,50 +89,56 @@ export default function PremiumSubscription() {
     <div className={styles.container}>
       <h1>Subscription Plans</h1>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleStripePayment();
-        }}
-        className={styles.form}
-      >
-        <label>
-          Subscription Plan:
-          <select
-            value={planType}
-            onChange={(e) => setPlanType(e.target.value)}
-            required
-          >
-            <option value="">Select plan</option>
-            <option value="Expensive">Expensive</option>
-            <option value="Medium">Medium</option>
-            <option value="Small">Small</option>
-          </select>
-        </label>
-
-        <label>
-          Number of Days:
-          <input
-            type="number"
-            min="1"
-            max="365"
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
-            required
-          />
-        </label>
-
-        <div className={styles.price}>
-          <strong>
-            Total Price: ₹{planType ? pricing[planType] * days : 0}
-          </strong>
+      {isSubscribed && subscriptionInfo ? (
+        <div className={styles.alreadySubscribed}>
+          <p>You are already subscribed until <strong>{new Date(subscriptionInfo.expiryDate).toLocaleDateString()}</strong>.</p>
         </div>
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleStripePayment();
+          }}
+          className={styles.form}
+        >
+          <label>
+            Subscription Plan:
+            <select
+              value={planType}
+              onChange={(e) => setPlanType(e.target.value)}
+              required
+            >
+              <option value="">Select plan</option>
+              <option value="Expensive">Expensive</option>
+              <option value="Medium">Medium</option>
+              <option value="Small">Small</option>
+            </select>
+          </label>
 
-        <button type="submit" className={styles.subscribeButton}>
-          <SiStripe size={24} style={{ marginRight: "8px" }} />
-          Pay with Stripe
-        </button>
-      </form>
+          <label>
+            Number of Days:
+            <input
+              type="number"
+              min="1"
+              max="365"
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              required
+            />
+          </label>
+
+          <div className={styles.price}>
+            <strong>
+              Total Price: ₹{planType ? pricing[planType] * days : 0}
+            </strong>
+          </div>
+
+          <button type="submit" className={styles.subscribeButton}>
+            <SiStripe size={24} style={{ marginRight: "8px" }} />
+            Pay with Stripe
+          </button>
+        </form>
+      )}
 
       <div className={styles.infoBox}>
         <h3>Why choose a Subscription?</h3>

@@ -5,6 +5,7 @@ import { FaSearch, FaBell, FaTh, FaRegCommentAlt, FaUserCircle } from "react-ico
 import axios from "axios";
 import "./Header.css";
 
+
 const Header = () => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
@@ -65,7 +66,7 @@ const Header = () => {
       {/* Right side icons */}
       <div className="header-right">
         <FaRegCommentAlt className="icon" title="Messages" onClick={()=>navigate("/chatbox")} />
-        <FaBell className="icon" title="Notifications" />
+        <FaBell className="icon" onClick={()=>navigate("/requestreceived")} title="Notifications" />
         <FaTh className="icon" title="Apps" />
 
         <div className="profile-menu" ref={menuRef}>

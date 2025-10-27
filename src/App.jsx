@@ -12,37 +12,42 @@ import Home from "./Homedash/Home.jsx";
 import Header from "./Homedash/Header.jsx";
 import PostItem from "./Homedash/Postitem.jsx";
 import Profile from "./Homedash/Newprofile.jsx";
-import ChatBox from "./Homedash/Chatbox.jsx";
+import Chatbox from "./Homedash/Chatbox.jsx"; 
+import ViewPosts from "./Homedash/ViewPosts.jsx"; // added
+import RequestReceived from "./Homedash/RequestReceived.jsx"; // added
 import Explore from "./explore/Explore.jsx";
 import Premium from "./post/premium.jsx";
 import PaymentSuccess from "./post/PaymentSuccess.jsx";
 import ProfilePage from "./Homedash/Newprofile.jsx";
-import EditProfile from "./Homedash/Editprofile.jsx";
+import EditProfile from "./Homedash/EditProfile.jsx";
+
 function App() {
   return (
-    
-      <Routes>
-      <Route path="/" element={
-        <>
-        <title>sharesquare</title>
-          
-          <Hero />
-          <Step />
-          <Feature />
-          <Vision />
-          <Anime /> 
-          <ServiceQuote />
-          <EndPage />
-          
-        </>
-      } />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <>
+            <title>sharesquare</title>
+            <Hero />
+            <Step />
+            <Feature />
+            <Vision />
+            <Anime />
+            <ServiceQuote />
+            <EndPage />
+          </>
+        }
+      />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/home" element={<Home />} />
       <Route path="/post" element={<PostItem />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/chatbox/:email" element={<ChatBox />} />
-      <Route path="/chatbox" element={<ChatBox />} /> 
+      <Route path="/chatbox/:email" element={<Chatbox />} />
+      <Route path="/chatbox" element={<Chatbox />} />
+      <Route path="/viewposts/:email" element={<ViewPosts />} />
+      <Route path="/requestreceived" element={<RequestReceived />} />
       <Route path="/explore" element={<Explore />} />
       <Route path="/premium" element={<Premium />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
