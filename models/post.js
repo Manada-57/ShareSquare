@@ -8,6 +8,8 @@ const postSchema = new mongoose.Schema({
   condition: String,
   tags: [String],
   location: String,
+    lat: Number,
+  lon: Number,
   contactPrefs: [String],
   images: [String],
   createdAt: { type: Date, default: Date.now }

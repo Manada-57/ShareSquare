@@ -19,6 +19,8 @@ import SearchResults from "./Homedash/SearchResults.jsx";
 import AdminDashboard from "./admin/AdminDashboard.jsx";
 import ViewPosts from "./Homedash/ViewPosts.jsx";
 import RequestReceived from "./Homedash/RequestReceived.jsx";
+import PremiumSubscription from "./Homedash/PremiumSubscription.jsx";
+import PaymentSuccess from "./Homedash/PaymentSuccess.jsx";
 function App() {
   return (
     
@@ -49,6 +51,8 @@ function App() {
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/viewposts/:email" element={<ViewPosts />} />
       <Route path="/requestreceived" element={<RequestReceived />} />
+      <Route path="/premium" element={<PremiumSubscription />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
     </Routes>
   );
 }

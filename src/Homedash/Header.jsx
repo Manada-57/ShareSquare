@@ -49,6 +49,7 @@ const Header = () => {
 
   // ---------------- Handlers ----------------
   const handleLogout = () => {
+    localStorage.removeItem(`userRatings_${currentUser}`);
     sessionStorage.removeItem("user");
     navigate("/login", { replace: true });
   };

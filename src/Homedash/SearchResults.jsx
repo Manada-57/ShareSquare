@@ -1,114 +1,154 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./SearchResults.css";
-import Header from "./Header";
+
 const SearchResults = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState("relevance");
+  const [sortedPosts, setSortedPosts] = useState([]);
+  const [userLocation, setUserLocation] = useState(null);
+  const user = JSON.parse(sessionStorage.getItem("user"));
 
-  const queryParams = new URLSearchParams(location.search);
-  const searchQuery = queryParams.get("query");
+  // ✅ Convert km → 1–10 distance score (1 = close, 10 = far)
+  const distanceToScore = (km) => {
+    if (km <= 1) return 1;
+    if (km <= 3) return 2;
+    if (km <= 5) return 4;
+    if (km <= 8) return 6;
+    if (km <= 10) return 8;
+    return 10;
+  };
 
+  // ✅ Tag → numeric value
+  const valueToScore = (tag) => {
+    switch (tag?.toLowerCase()) {
+      case "cheap":
+        return 2;
+      case "medium":
+        return 3;
+      case "expensive":
+        return 5;
+      default:
+        return 3;
+    }
+  };
+
+  // ✅ Haversine distance in km
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  // ✅ Get user current location
   useEffect(() => {
-    if (!searchQuery) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+      },
+      (err) => console.error("Geolocation error:", err)
+    );
+  }, []);
 
-    const fetchResults = async () => {
+  // ✅ Fetch posts + trust + ML recommendations
+  useEffect(() => {
+    if (!userLocation) return;
+
+    const fetchAndRecommend = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/posts/search?query=${encodeURIComponent(searchQuery)}&sort=${sortBy}`
+        const res = await axios.get("http://localhost:5000/api/posts");
+        const allPosts = res.data;
+        const borrowerEmail = user?.email;
+
+        // Get borrower trust
+        const borrowerTrustRes = await axios.get(
+          `http://localhost:5000/api/user/trust/${borrowerEmail}`
         );
-        setResults(res.data);
+        const borrowerTrust = borrowerTrustRes.data.trustScore || 50;
+
+        // Cache for lender trust scores
+        const trustCache = {};
+
+        // Enrich each post
+        const enriched = await Promise.all(
+          allPosts.map(async (post) => {
+            // 🔹 Get lender trust (with cache)
+            if (!trustCache[post.userEmail]) {
+              const lenderTrustRes = await axios.get(
+                `http://localhost:5000/api/user/trust/${post.userEmail}`
+              );
+              trustCache[post.userEmail] = lenderTrustRes.data.trustScore || 50;
+            }
+            const lenderTrust = trustCache[post.userEmail];
+
+            // 🔹 Calculate distance in km
+            const km = calculateDistance(
+              userLocation.lat,
+              userLocation.lon,
+              post.location.lat,
+              post.location.lon
+            );
+
+            // 🔹 Prepare feature inputs
+            const distanceScore = distanceToScore(km);
+            const valueScore = valueToScore(post.tags);
+            const itemAvailable = 1;
+
+            const features = [
+              borrowerTrust,
+              lenderTrust,
+              itemAvailable,
+              valueScore,
+              distanceScore,
+            ];
+
+            // 🔹 Get ML prediction
+            const mlRes = await axios.post("http://127.0.0.1:5001/predict", {
+              features,
+            });
+
+            const matchScore = mlRes.data.probability;
+            return { ...post, matchScore, km };
+          })
+        );
+
+        // ✅ Sort by ML match score (high → low)
+        const sorted = enriched.sort((a, b) => b.matchScore - a.matchScore);
+        setSortedPosts(sorted);
       } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching recommendations:", err);
       }
     };
 
-    fetchResults();
-  }, [searchQuery, sortBy]);
-
-  if (!searchQuery) return <p className="no-query">No search query provided.</p>;
+    fetchAndRecommend();
+  }, [userLocation]);
 
   return (
-        <div className="post-container">
-          <Header />
-    
-    <div className="search-page-container">
-      {/* Sidebar Filters */}
-      <aside className="search-sidebar">
-        <h3>Filters</h3>
-        <div className="filter-section">
-          <h4>Categories</h4>
-          <ul>
-            <li>Mobiles & Accessories</li>
-            <li>Electronics</li>
-            <li>Home & Furniture</li>
-            <li>Fashion</li>
-          </ul>
-        </div>
-        <div className="filter-section">
-          <h4>Price</h4>
-          <input type="range" min="0" max="50000" step="1000" />
-        </div>
-      </aside>
+    <div className="search-results">
+      <h2>🔍 Recommended Products</h2>
 
-      {/* Main Results */}
-      <main className="search-results">
-        <div className="results-header">
-          <p>
-            Showing 1 – {results.length} of {results.length} results for "{searchQuery}"
-          </p>
-          <div className="sort-options">
-            <label>Sort By: </label>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="relevance">Relevance</option>
-              <option value="popularity">Popularity</option>
-              <option value="priceLow">Price -- Low to High</option>
-              <option value="priceHigh">Price -- High to Low</option>
-              <option value="newest">Newest First</option>
-            </select>
-          </div>
+      {sortedPosts.length === 0 ? (
+        <p>Loading recommendations...</p>
+      ) : (
+        <div className="posts-grid">
+          {sortedPosts.map((post) => (
+            <div key={post._id} className="post-card">
+              <h3>{post.title}</h3>
+              <p>{post.description}</p>
+              <p><strong>Tag:</strong> {post.tags}</p>
+              <p><strong>Distance:</strong> {post.km.toFixed(2)} km</p>
+              <p><strong>Distance Score:</strong> {distanceToScore(post.km)}</p>
+              <p><strong>Predicted Match:</strong> {(post.matchScore * 100).toFixed(1)}%</p>
+            </div>
+          ))}
         </div>
-
-        {loading ? (
-          <p>Loading...</p>
-        ) : results.length === 0 ? (
-          <p>No products found.</p>
-        ) : (
-          <div className="results-list">
-            {results.map((post) => (
-              <div
-                key={post._id}
-                className="result-card"
-                onClick={() => navigate(`/product/${post._id}`)}
-              >
-                <div className="card-image">
-                  <img
-                    src={
-                      post.images?.[0].startsWith("http")
-                        ? post.images[0]
-                        : `http://localhost:5000/${post.images[0]}`
-                    }
-                    alt={post.title}
-                  />
-                </div>
-                <div className="card-details">
-                  <h3>{post.title}</h3>
-                  <p>{post.description}</p>
-                  <p className="price">₹{post.price || "N/A"}</p>
-                  {post.offer && <p className="offer">{post.offer}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
+      )}
     </div>
   );
 };
