@@ -28,6 +28,19 @@ const requestSchema = new mongoose.Schema({
     enum: ["Pending", "Accepted", "Rejected"],
     default: "Pending",
   },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date, // optional (only for Borrow)
+  },
+  returnStatusBySender: { type: Boolean, default: false },
+  returnStatusByOwner: { type: Boolean, default: false },
+  returnedAt: { type: Date },
+  declineCount: { type: Number, default: 0 },
+  adminuc: { type: Boolean, default: false },
+
   createdAt: {
     type: Date,
     default: Date.now,

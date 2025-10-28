@@ -1,0 +1,96 @@
+.container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #f7f9fc;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.form label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #555;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.price {
+  margin: 15px 0;
+  font-size: 1.2rem;
+  color: #222;
+  text-align: center;
+}
+
+.paymentOptions {
+  margin: 20px 0;
+}
+
+.paymentOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #444;
+}
+
+.paymentOption input {
+  cursor: pointer;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.subscribeButton {
+  width: 100%;
+  background-color: #0066ff;
+  color: white;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.subscribeButton:hover {
+  background-color: #004bb5;
+}
+
+.infoBox {
+  margin-top: 30px;
+  background: #e7f1ff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  color: #004085;
+  font-size: 0.95rem;
+}
+
+.infoBox ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.infoBox li {
+  margin-bottom: 6px;
+}

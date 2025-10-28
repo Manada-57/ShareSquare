@@ -12,31 +12,20 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const menuRef = useRef(null);
-
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
-
-  // ---------------- SOCKET.IO ----------------
   useEffect(() => {
     if (!currentUser) return;
-
     const socket = io(SOCKET_URL);
-
-    // Join user's personal room for notifications
     socket.emit("joinUserRoom", { email: currentUser });
-
-    // Listen for incoming messages
     socket.on("chatMessage", (msg) => {
       if (msg.receiver === currentUser) {
-        setHasNewMessage(true); // show red dot
+        setHasNewMessage(true);
       }
     });
-
     return () => {
       socket.disconnect();
     };
   }, [currentUser]);
-
-  // ---------------- Profile dropdown ----------------
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -46,26 +35,21 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // ---------------- Handlers ----------------
   const handleLogout = () => {
+    localStorage.removeItem(`userRatings_${currentUser}`);
     sessionStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
-
   const handleSearch = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     setSearchQuery("");
   };
-
   const handleMessagesClick = () => {
     setHasNewMessage(false); // reset red dot
     navigate("/chatbox");
   };
-
-  // ---------------- JSX ----------------
   return (
     <header className="app-header">
       {/* Left side */}

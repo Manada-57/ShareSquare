@@ -13,7 +13,9 @@ export default function PostItem() {
     category: "",
     condition: "",
     tags: [],
-    location: "", // auto-filled with user city
+    location: "",
+    latitude: "",
+    longitude: "",
     contactPrefs: [],
     images: [],
   });
@@ -26,23 +28,21 @@ export default function PostItem() {
       navigator.geolocation.getCurrentPosition(async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          const res = await axios.get(
-            `https://nominatim.openstreetmap.org/reverse`,
-            {
-              params: {
-                lat: latitude,
-                lon: longitude,
-                format: "json",
-              },
-            }
-          );
+          const res = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: { lat: latitude, lon: longitude, format: "json" },
+          });
           const city =
             res.data.address.city ||
             res.data.address.town ||
             res.data.address.village ||
             res.data.address.state ||
             "Unknown";
-          setFormData((prev) => ({ ...prev, location: city }));
+          setFormData((prev) => ({
+            ...prev,
+            location: city,
+            latitude,
+            longitude,
+          }));
         } catch (err) {
           console.error("Location fetch failed:", err);
         }
@@ -86,12 +86,11 @@ export default function PostItem() {
       formDataToSend.append("category", formData.category);
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("location", formData.location);
+      formDataToSend.append("latitude", formData.latitude);
+      formDataToSend.append("longitude", formData.longitude);
       formDataToSend.append("userEmail", userEmail);
       formDataToSend.append("tags", JSON.stringify(formData.tags));
-      formDataToSend.append(
-        "contactPrefs",
-        JSON.stringify(formData.contactPrefs)
-      );
+      formDataToSend.append("contactPrefs", JSON.stringify(formData.contactPrefs));
       formData.images.forEach((image) => {
         formDataToSend.append("images", image);
       });
@@ -105,20 +104,22 @@ export default function PostItem() {
       );
 
       if (res.data.success) {
-        alert("Item posted successfully!");
+        alert("✅ Item posted successfully!");
         setFormData({
           title: "",
           description: "",
           category: "",
           condition: "",
           tags: [],
-          location: formData.location, // keep detected city
+          location: formData.location,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
           contactPrefs: [],
           images: [],
         });
       }
     } catch (err) {
-      console.error("Error posting item:", err);
+      console.error("❌ Error posting item:", err);
     }
   };
 
@@ -195,20 +196,10 @@ export default function PostItem() {
             </div>
 
             <label>Upload Images</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleChange}
-            />
+            <input type="file" multiple accept="image/*" onChange={handleChange} />
 
             <label>Detected Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              readOnly // user cannot edit
-            />
+            <input type="text" name="location" value={formData.location} readOnly />
 
             <label>Contact Preferences</label>
             <div className="checks">

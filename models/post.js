@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const postSchema = new mongoose.Schema({
   userEmail: { type: String, required: true }, // email instead of userId
   title: { type: String, required: true },
@@ -8,6 +7,8 @@ const postSchema = new mongoose.Schema({
   condition: String,
   tags: [String],
   location: String,
+    lat: Number,
+  lon: Number,
   contactPrefs: [String],
   images: [String],
   createdAt: { type: Date, default: Date.now }
