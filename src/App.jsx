@@ -22,11 +22,11 @@ import PaymentSuccess from "./Homedash/PaymentSuccess.jsx";
 import PostDetails from "./Homedash/PostDetails.jsx";
 
 // Admin Pages
-import AdminDashboard from "./Admin/AdminDashboard.jsx";
-import AdminUsers from "./Admin/AdminUsers.jsx";
-import AdminUserProfile from "./Admin/AdminUserProfile.jsx";
-import AdminChatPage from "./Admin/AdminChatPage.jsx";
-import AdminReports from "./Admin/AdminReports.jsx";
+import AdminDashboard from "./admin/AdminDashboard.jsx";
+import AdminUsers from "./admin/AdminUsers.jsx";
+import AdminUserProfile from "./admin/AdminUserProfile.jsx";
+import AdminChatPage from "./admin/AdminChatPage.jsx";
+import AdminReports from "./admin/AdminReports.jsx";
 
 function App() {
   return (
