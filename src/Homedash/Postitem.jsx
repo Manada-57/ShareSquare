@@ -107,7 +107,7 @@ export default function PostItem() {
         formDataToSend.append("images", image);
       });
 
-      const res = await axios.post("http://localhost:5000/api/post", formDataToSend, {
+      const res = await axios.post("https://sharesquare-y50q.onrender.com/api/post", formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

@@ -18,7 +18,7 @@ const [endDate, setEndDate] = useState("");
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/posts?email=${email}`);
+        const res = await axios.get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`);
         setPosts(res.data);
       } catch (err) {
         console.error("Failed to load posts:", err);
@@ -33,7 +33,7 @@ const [endDate, setEndDate] = useState("");
       console.log("Checking subscription for:", currentUserEmail);
 
       const res = await axios.get(
-        `http://localhost:5000/api/subscription/${currentUserEmail}`
+        `https://sharesquare-y50q.onrender.com/api/subscription/${currentUserEmail}`
       );
 
       console.log("Full response:", res.data);
@@ -111,7 +111,7 @@ const [endDate, setEndDate] = useState("");
     }
 
     try {
-      await axios.post("http://localhost:5000/api/request/send", {
+      await axios.post("https://sharesquare-y50q.onrender.com/api/request/send", {
         postId: selectedPost._id,
         postTitle: selectedPost.title,
         requestType: requestType,

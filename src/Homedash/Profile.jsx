@@ -18,10 +18,10 @@ const ProfilePage = () => {
   const fetchUserAndPosts = async () => {
     if (!email) return;
     try {
-      const userRes = await axios.get(`http://localhost:5000/api/user?email=${email}`);
+      const userRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`);
       setUser(userRes.data);
       
-      const postsRes = await axios.get(`http://localhost:5000/api/posts?email=${email}`);
+      const postsRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`);
       setPosts(postsRes.data);
     } catch (err) {
       console.error(err);
@@ -37,7 +37,7 @@ const ProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/api/users/editprofile/${email}`, formData);
+      await axios.put(`https://sharesquare-y50q.onrender.com/api/users/editprofile/${email}`, formData);
       await fetchUserAndPosts();
       setEditing(false);
       setFormData({}); // Clear form data after saving
@@ -88,7 +88,7 @@ const ProfilePage = () => {
     if (!window.confirm("Are you sure you want to delete selected posts?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/posts/delete-multiple`, {
+      await axios.delete(`https://sharesquare-y50q.onrender.com/api/posts/delete-multiple`, {
         data: { ids: selectedPosts },
       });
       setPosts((prev) => prev.filter((p) => !selectedPosts.includes(p._id)));

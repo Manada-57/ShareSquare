@@ -13,12 +13,12 @@ export default function UserProfile() {
   useEffect(() => {
     if (email) {
       axios
-        .get(`http://localhost:5000/api/posts?email=${email}`)
+        .get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`)
         .then((res) => setPosts(res.data))
         .catch((err) => console.error(err));
 
       axios
-        .get(`http://localhost:5000/api/user?email=${email}`)
+        .get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`)
         .then((res) => setUserData(res.data))
         .catch((err) => console.error(err));
     }

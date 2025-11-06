@@ -8,7 +8,7 @@ export default function AdminUsers() {
   const navigate = useNavigate();
 
   const fetchUsers = () => {
-    axios.get("http://localhost:5000/api/admin/users")
+    axios.get("https://sharesquare-y50q.onrender.com/api/admin/users")
       .then(res => setUsers(res.data))
       .catch(err => console.error(err));
   };
@@ -19,7 +19,7 @@ export default function AdminUsers() {
 
   const deleteUser = (email) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-    axios.delete(`http://localhost:5000/api/admin/users/${email}`)
+    axios.delete(`https://sharesquare-y50q.onrender.com/api/admin/users/${email}`)
       .then(() => fetchUsers())
       .catch(err => console.error(err));
   };

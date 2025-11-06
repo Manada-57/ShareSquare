@@ -16,7 +16,7 @@ export default function AdminChatPage() {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/user?email=${selectedUserEmail}`);
+        const res = await axios.get(`https://sharesquare-y50q.onrender.com/api/user?email=${selectedUserEmail}`);
         setSelectedUserName(res.data.name || selectedUserEmail);
       } catch (err) {
         console.error(err);
@@ -33,7 +33,7 @@ export default function AdminChatPage() {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/admin/user-messages/${selectedUserEmail}`
+          `https://sharesquare-y50q.onrender.com/api/admin/user-messages/${selectedUserEmail}`
         );
         const msgs = res.data;
 

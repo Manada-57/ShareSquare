@@ -16,7 +16,7 @@ export default function PostDetails() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/posts/${id}`);
+        const res = await axios.get(`https://sharesquare-y50q.onrender.com/api/posts/${id}`);
         setPost(res.data);
       } catch (err) {
         console.error("Error fetching post:", err);
@@ -28,7 +28,7 @@ export default function PostDetails() {
   const checkSubscription = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/subscription/${currentUserEmail}`
+        `https://sharesquare-y50q.onrender.com/api/subscription/${currentUserEmail}`
       );
       const sub = res.data.subscription;
       if (!sub || !sub.expiryDate) return false;
@@ -61,7 +61,7 @@ export default function PostDetails() {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/request/send", {
+      await axios.post("https://sharesquare-y50q.onrender.com/api/request/send", {
         postId: post._id,
         postTitle: post.title,
         requestType,

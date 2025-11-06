@@ -20,7 +20,7 @@ export default function PremiumSubscription() {
     const checkSubscription = async () => {
       if (!currentUserEmail) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/subscription/${currentUserEmail}`);
+        const res = await fetch(`https://sharesquare-y50q.onrender.com/api/subscription/${currentUserEmail}`);
         const data = await res.json();
         if (data.subscription && new Date(data.subscription.expiryDate) > new Date()) {
           setIsSubscribed(true);
@@ -55,7 +55,7 @@ export default function PremiumSubscription() {
     expiryDate.setDate(expiryDate.getDate() + days); // calculate expiry date
 
     try {
-      const res = await fetch("http://localhost:5000/api/make-payment", {
+      const res = await fetch("https://sharesquare-y50q.onrender.com/api/make-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

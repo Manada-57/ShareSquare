@@ -60,7 +60,7 @@ const SearchResults = () => {
   const fetchRecommendations = async (coords) => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/posts/search", {
+      const res = await axios.get("https://sharesquare-y50q.onrender.com/api/posts/search", {
         params: { query: searchQuery },
       });
       const allPosts = res.data;
@@ -71,7 +71,7 @@ const SearchResults = () => {
 
       const borrowerEmail = user?.email;
       const borrowerTrustRes = await axios.get(
-        `http://localhost:5000/api/user/trust/${borrowerEmail}`
+        `https://sharesquare-y50q.onrender.com/api/user/trust/${borrowerEmail}`
       );
       const borrowerTrust = borrowerTrustRes.data.trustScore || 50;
 
@@ -82,7 +82,7 @@ const SearchResults = () => {
           if (!post.latitude || !post.longitude) return null;
           if (!trustCache[post.userEmail]) {
             const lenderTrustRes = await axios.get(
-              `http://localhost:5000/api/user/trust/${post.userEmail}`
+              `https://sharesquare-y50q.onrender.com/api/user/trust/${post.userEmail}`
             );
             trustCache[post.userEmail] = lenderTrustRes.data.trustScore || 50;
           }
