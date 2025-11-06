@@ -115,7 +115,7 @@ const SearchResults = () => {
         return;
       }
 
-      const mlRes = await axios.post("http://127.0.0.1:5000/search", {
+      const mlRes = await axios.post("https://python-model-8bvx.onrender.com/search", {
         mode: "borrower",
         borrower: { trust: borrowerTrust },
         item: { available: 1, value: 3 },
