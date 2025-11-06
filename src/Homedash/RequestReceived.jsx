@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./RequestReceived.css";
-
+import Header from "./Header.jsx";
 export default function ReceivedRequests() {
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
   const [requests, setRequests] = useState([]);
@@ -22,7 +22,7 @@ useEffect(() => {
     const fetchRequests = async () => {
       try {
         const res = await axios.get(
-          `https://sharesquare-y50q.onrender.com/api/request/user/${currentUser}`
+          `http://localhost:5000/api/request/user/${currentUser}`
         );
         setRequests(res.data);
       } catch (err) {
@@ -38,11 +38,11 @@ useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const res = await axios.put(
-          "https://sharesquare-y50q.onrender.com/api/request/autoAdminEscalation"
+          "http://localhost:5000/api/request/autoAdminEscalation"
         );
         if (res.data.updated > 0) {
           const refreshed = await axios.get(
-            `https://sharesquare-y50q.onrender.com/api/request/user/${currentUser}`
+            `http://localhost:5000/api/request/user/${currentUser}`
           );
           setRequests(refreshed.data);
         }
@@ -57,7 +57,7 @@ useEffect(() => {
   // 🔹 Accept / Reject
   const handleAction = async (id, action) => {
     try {
-      await axios.put(`https://sharesquare-y50q.onrender.com/api/request/action/${id}`, { action });
+      await axios.put(`http://localhost:5000/api/request/action/${id}`, { action });
       setRequests((prev) =>
         prev.map((req) =>
           req._id === id
@@ -106,7 +106,7 @@ const handleReturnRequest = async (reqId, side) => {
 
     // 🔹 API call to backend (triggers trust logic)
     const res = await axios.put(
-      `https://sharesquare-y50q.onrender.com/api/request/return/${reqId}`,
+      `http://localhost:5000/api/request/return/${reqId}`,
       { side }
     );
 
@@ -133,7 +133,7 @@ const handleSatisfaction = async (req, value) => {
   const score = value; // 1 to 5
 
   try {
-    await axios.post("https://sharesquare-y50q.onrender.com/api/user/rate", {
+    await axios.post("http://localhost:5000/api/user/rate", {
       from,
       to,
       score,
@@ -161,6 +161,8 @@ const handleSatisfaction = async (req, value) => {
   if (!currentUser) return <p>Please log in to see your requests.</p>;
 
   return (
+    <div className="post-container">
+      <Header />
     <div className="requests-page">
       <h2>📬 All Requests & Updates</h2>
 
@@ -338,6 +340,7 @@ const handleSatisfaction = async (req, value) => {
           })}
         </div>
       )}
+    </div>
     </div>
   );
 }

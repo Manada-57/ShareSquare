@@ -12,25 +12,16 @@ const ProfilePage = () => {
   const [posts, setPosts] = useState([]);
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState([]);
-  const [focusedPost, setFocusedPost] = useState(null); // For modal view
+  const [focusedPost, setFocusedPost] = useState(null);
 
   // Fetch user and posts
   const fetchUserAndPosts = async () => {
     if (!email) return;
     try {
-      const userRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`);
+      const userRes = await axios.get(`http://localhost:5000/api/user?email=${email}`);
       setUser(userRes.data);
-      if (editing) {
-        setFormData({
-          name: userRes.data.name || '',
-          mobileNumber: userRes.data.mobileNumber || '',
-          gender: userRes.data.gender || '',
-          country: userRes.data.country || '',
-          state: userRes.data.state || '',
-          city: userRes.data.city || ''
-        });
-      }
-      const postsRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`);
+      
+      const postsRes = await axios.get(`http://localhost:5000/api/posts?email=${email}`);
       setPosts(postsRes.data);
     } catch (err) {
       console.error(err);
@@ -46,26 +37,34 @@ const ProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`https://sharesquare-y50q.onrender.com/api/users/editprofile/${email}`, formData);
+      await axios.put(`http://localhost:5000/api/users/editprofile/${email}`, formData);
       await fetchUserAndPosts();
       setEditing(false);
+      setFormData({}); // Clear form data after saving
     } catch (err) {
       console.error(err);
       alert("Failed to update profile");
     }
   };
 
-  const handleEditClick = async () => {
-    const userRes = await axios.get(`https://sharesquare-y50q.onrender.com/api/user?email=${email}`);
+  const handleEditClick = () => {
+  
+    console.log("Current user object:", user); 
+    
     setFormData({
-      name: userRes.data.name || '',
-      mobileNumber: userRes.data.mobileNumber || '',
-      gender: userRes.data.gender || '',
-      country: userRes.data.country || '',
-      state: userRes.data.state || '',
-      city: userRes.data.city || ''
+      name: user.name || '',
+      mobileNumber: user.mobileNumber || user.mobilenumber || user.mobileNumber || '',
+      gender: user.gender || '',
+      country: user.country || '',
+      state: user.state || '',
+      city: user.city || ''
     });
     setEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+    setFormData({}); 
   };
 
   const toggleDeleteMode = () => {
@@ -89,7 +88,7 @@ const ProfilePage = () => {
     if (!window.confirm("Are you sure you want to delete selected posts?")) return;
 
     try {
-      await axios.delete(`https://sharesquare-y50q.onrender.com/api/posts/delete-multiple`, {
+      await axios.delete(`http://localhost:5000/api/posts/delete-multiple`, {
         data: { ids: selectedPosts },
       });
       setPosts((prev) => prev.filter((p) => !selectedPosts.includes(p._id)));
@@ -102,7 +101,7 @@ const ProfilePage = () => {
   };
 
   const handlePostClick = (post) => {
-    if (deleteMode) return; // disable focus click in delete mode
+    if (deleteMode) return;
     setFocusedPost(post);
   };
 
@@ -131,28 +130,67 @@ const ProfilePage = () => {
           <p>@{user?.username}</p>
           <p>{user?.email}</p>
           <p>{user?.bio}</p>
-          <p><strong>Trust Score:</strong> {user.trustScore}</p>
+          <p><strong>Trust Score:</strong> {user.trustScore || 0}</p>
           <p><strong>Rating:</strong> ⭐ {avgRating}</p>
           <button onClick={handleEditClick}>Edit Profile</button>
 
           {editing && (
             <form onSubmit={handleSubmit} className="edit-form">
-              <input type="text" name="name" value={formData.name || ''} onChange={handleChange} placeholder="Name" />
-              <input type="text" name="mobileNumber" value={formData.mobileNumber || ''} onChange={handleChange} placeholder="Mobile Number" />
-              <select name="gender" value={formData.gender || ''} onChange={handleChange}>
+              <input 
+                type="text" 
+                name="name" 
+                value={formData.name || ''} 
+                onChange={handleChange} 
+                placeholder="Name" 
+                required
+              />
+              <input 
+                type="text" 
+                name="mobileNumber" 
+                value={formData.mobileNumber || ''} 
+                onChange={handleChange} 
+                placeholder="Mobile Number" 
+              />
+              <select 
+                name="gender" 
+                value={formData.gender || ''} 
+                onChange={handleChange}
+              >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
+                <option value="Other">Other</option>
               </select>
-              <input type="text" name="country" value={formData.country || ''} onChange={handleChange} placeholder="Country" />
-              <input type="text"name="state" value={formData.state || ''} onChange={handleChange} placeholder="State" />
-              <input type="text" name="city" value={formData.city || ''} onChange={handleChange} placeholder="City" />
-              <button type="submit">Save</button>
+              <input 
+                type="text" 
+                name="country" 
+                value={formData.country || ''} 
+                onChange={handleChange} 
+                placeholder="Country" 
+              />
+              <input 
+                type="text" 
+                name="state" 
+                value={formData.state || ''} 
+                onChange={handleChange} 
+                placeholder="State" 
+              />
+              <input 
+                type="text" 
+                name="city" 
+                value={formData.city || ''} 
+                onChange={handleChange} 
+                placeholder="City" 
+              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit">Save</button>
+                <button type="button" onClick={handleCancelEdit}>Cancel</button>
+              </div>
             </form>
           )}
         </div>
 
-        {/* MAIN SECTION */}
+        
         <div className="main-section">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>Your Posts</h3>
@@ -172,15 +210,16 @@ const ProfilePage = () => {
               posts.map((post) => (
                 <div
                   key={post._id}
-                  className="post-card"
+                  className="post-card2"
                   onClick={() => handlePostClick(post)}
-                  style={{ position: "relative" }}
+                  style={{ position: "relative", cursor: deleteMode ? "default" : "pointer" }}
                 >
                   {deleteMode && (
                     <input
                       type="checkbox"
                       checked={selectedPosts.includes(post._id)}
                       onChange={() => handleCheckboxChange(post._id)}
+                      onClick={(e) => e.stopPropagation()}
                       style={{ position: "absolute", top: "10px", right: "10px" }}
                     />
                   )}
@@ -212,7 +251,7 @@ const ProfilePage = () => {
               <img
                 src={focusedPost.images[0]}
                 alt="Full view"
-                style={{ width: "50%" ,height:"50%", borderRadius: "8px", marginTop: "10px" }}
+                style={{ width: "50%", height: "50%", borderRadius: "8px", marginTop: "10px" }}
               />
             )}
             <button onClick={closeModal} style={{ marginTop: "10px" }}>Close</button>

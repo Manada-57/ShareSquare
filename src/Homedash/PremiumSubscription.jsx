@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./PremiumSubscription.module.css";
 import { SiStripe } from "react-icons/si";
+import Header from "./Header.jsx";
 export default function PremiumSubscription() {
   const [planType, setPlanType] = useState("");
   const [days, setDays] = useState(1);
@@ -19,7 +20,7 @@ export default function PremiumSubscription() {
     const checkSubscription = async () => {
       if (!currentUserEmail) return;
       try {
-        const res = await fetch(`https://sharesquare-y50q.onrender.com/api/subscription/${currentUserEmail}`);
+        const res = await fetch(`http://localhost:5000/api/subscription/${currentUserEmail}`);
         const data = await res.json();
         if (data.subscription && new Date(data.subscription.expiryDate) > new Date()) {
           setIsSubscribed(true);
@@ -54,7 +55,7 @@ export default function PremiumSubscription() {
     expiryDate.setDate(expiryDate.getDate() + days); // calculate expiry date
 
     try {
-      const res = await fetch("https://sharesquare-y50q.onrender.com/api/make-payment", {
+      const res = await fetch("http://localhost:5000/api/make-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,6 +83,8 @@ export default function PremiumSubscription() {
   };
 
   return (
+    <div className="post-container">
+      <Header />
     <div className={styles.container}>
       <h1>Subscription Plans</h1>
 
@@ -145,6 +148,7 @@ export default function PremiumSubscription() {
           <li>24/7 customer support for subscribers</li>
         </ul>
       </div>
+    </div>
     </div>
   );
 }

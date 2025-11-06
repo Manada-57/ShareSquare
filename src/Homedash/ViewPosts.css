@@ -18,7 +18,7 @@
   padding: 10px;
 }
 
-.post-card {
+.post-card1 {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -27,19 +27,19 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.post-card:hover {
+.post-card1:hover {
   transform: scale(1.03);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-.post-card img {
+.post-card1 img {
   width: 100%;
   height: 180px;
   object-fit: cover;
   border-bottom: 1px solid #eee;
 }
 
-.post-card h4 {
+.post-card1 h4 {
   margin: 10px;
   text-align: center;
   font-size: 1.1rem;

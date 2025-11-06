@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./ViewPosts.css";
-
+import Header from "./Header.jsx";
 export default function ViewPosts() {
   const { email } = useParams();
   const [posts, setPosts] = useState([]);
@@ -18,7 +18,7 @@ const [endDate, setEndDate] = useState("");
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get(`https://sharesquare-y50q.onrender.com/api/posts?email=${email}`);
+        const res = await axios.get(`http://localhost:5000/api/posts?email=${email}`);
         setPosts(res.data);
       } catch (err) {
         console.error("Failed to load posts:", err);
@@ -33,7 +33,7 @@ const [endDate, setEndDate] = useState("");
       console.log("Checking subscription for:", currentUserEmail);
 
       const res = await axios.get(
-        `https://sharesquare-y50q.onrender.com/api/subscription/${currentUserEmail}`
+        `http://localhost:5000/api/subscription/${currentUserEmail}`
       );
 
       console.log("Full response:", res.data);
@@ -111,7 +111,7 @@ const [endDate, setEndDate] = useState("");
     }
 
     try {
-      await axios.post("https://sharesquare-y50q.onrender.com/api/request/send", {
+      await axios.post("http://localhost:5000/api/request/send", {
         postId: selectedPost._id,
         postTitle: selectedPost.title,
         requestType: requestType,
@@ -136,6 +136,8 @@ const [endDate, setEndDate] = useState("");
   };
 
   return (
+    <div className="post-container">
+      <Header />
     <div className="posts-page">
       <h2>{email}'s Posts</h2>
       <div className="post-list">
@@ -147,7 +149,7 @@ const [endDate, setEndDate] = useState("");
           posts.map((p) => (
             <div
               key={p._id}
-              className="post-card"
+              className="post-card1"
               onClick={() => handlePostClick(p)}
             >
               <img src={p.images[0]} alt={p.title} />
@@ -248,6 +250,7 @@ const [endDate, setEndDate] = useState("");
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }
