@@ -1,0 +1,14 @@
+.admin-reports table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+.admin-reports th, .admin-reports td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+.admin-reports button {
+  padding: 6px 12px;
+  cursor: pointer;
+}

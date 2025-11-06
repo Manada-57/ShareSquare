@@ -13,22 +13,28 @@ import Header from "./Homedash/Header.jsx";
 import PostItem from "./Homedash/Postitem.jsx";
 import Profile from "./Homedash/Profile.jsx";
 import ChatBox from "./Homedash/Chatbox.jsx";
-import Explore from "./explore/Explore.jsx";
 import UserProfile from "./Homedash/UserProfile.jsx";
 import SearchResults from "./Homedash/SearchResults.jsx";
-import AdminDashboard from "./admin/AdminDashboard.jsx";
 import ViewPosts from "./Homedash/ViewPosts.jsx";
 import RequestReceived from "./Homedash/RequestReceived.jsx";
 import PremiumSubscription from "./Homedash/PremiumSubscription.jsx";
 import PaymentSuccess from "./Homedash/PaymentSuccess.jsx";
+import PostDetails from "./Homedash/PostDetails.jsx";
+
+// Admin Pages
+import AdminDashboard from "./Admin/AdminDashboard.jsx";
+import AdminUsers from "./Admin/AdminUsers.jsx";
+import AdminUserProfile from "./Admin/AdminUserProfile.jsx";
+import AdminChatPage from "./Admin/AdminChatPage.jsx";
+import AdminReports from "./Admin/AdminReports.jsx";
+
 function App() {
   return (
-    
     <Routes>
+      {/* Main website */}
       <Route path="/" element={
         <>
-        <title>sharesquare</title>
-            {/* Now only shown in home */}
+          <title>sharesquare</title>
           <Hero />
           <Step />
           <Feature />
@@ -44,15 +50,21 @@ function App() {
       <Route path="/post" element={<PostItem />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/chatbox/:email" element={<ChatBox />} />
-      <Route path="/chatbox" element={<ChatBox />} /> 
-      <Route path="/explore" element={<Explore />} />
+      <Route path="/chatbox" element={<ChatBox />} />
       <Route path="/user/:email" element={<UserProfile />} />
       <Route path="/search" element={<SearchResults />} />
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/viewposts/:email" element={<ViewPosts />} />
       <Route path="/requestreceived" element={<RequestReceived />} />
       <Route path="/premium" element={<PremiumSubscription />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/post/:id" element={<PostDetails />} />
+
+      {/* Admin routes */}
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/user/:email" element={<AdminUserProfile />} />
+      <Route path="/admin/chatbox/:email" element={<AdminChatPage />} />
+      <Route path="/admin/reports" element={<AdminReports />} />
     </Routes>
   );
 }

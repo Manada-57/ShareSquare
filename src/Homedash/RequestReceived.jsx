@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./RequestReceived.css";
-
+import Header from "./Header.jsx";
 export default function ReceivedRequests() {
   const currentUser = JSON.parse(sessionStorage.getItem("user"))?.email;
   const [requests, setRequests] = useState([]);
@@ -161,6 +161,8 @@ const handleSatisfaction = async (req, value) => {
   if (!currentUser) return <p>Please log in to see your requests.</p>;
 
   return (
+    <div className="post-container">
+      <Header />
     <div className="requests-page">
       <h2>📬 All Requests & Updates</h2>
 
@@ -338,6 +340,7 @@ const handleSatisfaction = async (req, value) => {
           })}
         </div>
       )}
+    </div>
     </div>
   );
 }

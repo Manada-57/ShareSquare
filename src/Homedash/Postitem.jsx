@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./Postitem.css";
 import Header from "./Header.jsx";
@@ -22,34 +22,45 @@ export default function PostItem() {
 
   const availableTags = ["Exchangeable", "Borrow", "Sale"];
 
-  // 🔹 Auto-detect location & coordinates
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        try {
-          const res = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
-            params: { lat: latitude, lon: longitude, format: "json" },
-          });
-          const city =
-            res.data.address.city ||
-            res.data.address.town ||
-            res.data.address.village ||
-            res.data.address.state ||
-            "Unknown";
-          setFormData((prev) => ({
-            ...prev,
-            location: city,
-            latitude,
-            longitude,
-          }));
-        } catch (err) {
-          console.error("Location fetch failed:", err);
-        }
-      });
+  // 🧭 Fetch coordinates when user enters a location
+  const fetchCoordinates = async () => {
+    if (!formData.location) {
+      alert("Please enter a location first!");
+      return;
     }
-  }, []);
 
+    try {
+      const res = await axios.get(
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            q: formData.location,
+            format: "json",
+            limit: 1,
+          },
+        }
+      );
+
+      if (res.data.length > 0) {
+        const { lat, lon, display_name } = res.data[0];
+        console.log("✅ Coordinates found:", lat, lon, display_name);
+
+        setFormData((prev) => ({
+          ...prev,
+          latitude: lat,
+          longitude: lon,
+          location: display_name,
+        }));
+      } else {
+        alert("❌ No results found for that place.");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching coordinates:", err);
+      alert("Error fetching location data. Try again.");
+    }
+  };
+
+  // 🧩 Input and form handling
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === "checkbox" && name === "tags") {
@@ -76,6 +87,7 @@ export default function PostItem() {
     }
   };
 
+  // 🚀 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -107,9 +119,9 @@ export default function PostItem() {
           category: "",
           condition: "",
           tags: [],
-          location: formData.location,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
+          location: "",
+          latitude: "",
+          longitude: "",
           contactPrefs: [],
           images: [],
         });
@@ -183,11 +195,31 @@ export default function PostItem() {
               ))}
             </div>
 
+            <label>Enter Location</label>
+            <div className="location-input">
+              <input
+                type="text"
+                name="location"
+                placeholder="e.g. Sivakasi, Tamil Nadu"
+                value={formData.location}
+                onChange={handleChange}
+              />
+              <button type="button" onClick={fetchCoordinates}>
+                Get Coordinates
+              </button>
+            </div>
+
+            <div className="coord-display">
+              {formData.latitude && (
+                <>
+                  <p>📍 Latitude: {formData.latitude}</p>
+                  <p>🌎 Longitude: {formData.longitude}</p>
+                </>
+              )}
+            </div>
+
             <label>Upload Images</label>
             <input type="file" multiple accept="image/*" onChange={handleChange} />
-
-            <label>Detected Location</label>
-            <input type="text" name="location" value={formData.location} readOnly />
 
             <label>Contact Preferences</label>
             <div className="checks">

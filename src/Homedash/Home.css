@@ -7,7 +7,11 @@
 .home-container {
   background-color: #f8f9fa;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
 }
+/* CATEGORY BAR */
 .category-bar {
   display: flex;
   overflow-x: auto;
@@ -15,19 +19,24 @@
   background-color: #fff;
   gap: 10px;
   border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 85px; /* same as header height */
+  z-index: 20;
+  flex-shrink: 0; /* prevents shrinking */
 }
-
 .category-bar::-webkit-scrollbar {
   display: none;
 }
 
 .category-btn {
-  padding: 8px 16px;
+  flex-shrink: 0;
+   padding: 10px 20px;  
   border: none;
-  border-radius: 20px;
+  border-radius: 25px;
   background-color: #dcdee0;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;           /* slightly bigger text */
+  font-weight: 500;          /* makes text more readable */
   transition: all 0.2s;
 }
 
@@ -35,17 +44,18 @@
   background-color: #ff6f00;
   color: #fff;
 }
-
-/* POSTS FEED */
 .posts-feed {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   padding: 20px 30px;
-  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  margin-top: 10px; /* ensures space below category bar */
 }
-
-.post-card {
+.post-card0 {
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -53,9 +63,10 @@
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
+  height: 320px; /* 👈 set a consistent card height */
 }
 
-.post-card:hover {
+.post-card0:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -64,12 +75,14 @@
   width: 100%;
   height: 180px;
   object-fit: cover;
+  flex-shrink: 0; /* 👈 prevents image from stretching */
 }
-
 .post-details {
   padding: 12px 15px;
+  flex-grow: 1; /* 👈 fills remaining height evenly */
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* evenly space content */
   gap: 6px;
 }
 

@@ -267,12 +267,25 @@ app.post('/api/verify/check', async (req, res) => {
 });
 app.post('/api/post', upload.array('images', 5), async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) return res.status(400).json({ success:false, error:'No files uploaded' });
+    if (!req.files || req.files.length === 0)
+      return res.status(400).json({ success: false, error: 'No files uploaded' });
 
-    const { title, description, category, condition, location, userEmail } = req.body;
+    const {
+      title,
+      description,
+      category,
+      condition,
+      location,
+      latitude,
+      longitude,
+      userEmail
+    } = req.body;
+
     const tags = JSON.parse(req.body.tags || '[]');
     const contactPrefs = JSON.parse(req.body.contactPrefs || '[]');
     const imageUrls = req.files.map(file => file.path);
+
+    // ✅ Create new post document
     const newItem = new Post({
       title,
       description,
@@ -280,14 +293,19 @@ app.post('/api/post', upload.array('images', 5), async (req, res) => {
       condition,
       tags,
       location,
+      latitude,
+      longitude,
       contactPrefs,
       userEmail,
-      images: imageUrls
+      images: imageUrls,
     });
+
     await newItem.save();
-    res.json({ success:true, item: newItem });
+
+    res.json({ success: true, item: newItem });
   } catch (err) {
-    res.status(500).json({ success:false, error: err.message });
+    console.error("❌ Error creating post:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 app.get('/api/posts', async (req, res) => {
@@ -313,6 +331,16 @@ app.get("/api/posts/search", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+// Get a single post by ID
+app.get("/api/posts/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -347,13 +375,16 @@ app.get('/api/explore', async (req, res) => {
   try {
     const { city } = req.query;
     let posts;
+
     if (city) {
       posts = await Post.find({
-        city: { $regex: new RegExp(city, "i") } 
+        city: { $regex: new RegExp(city, "i") }
       }).limit(20);
     } else {
       posts = await Post.aggregate([{ $sample: { size: 20 } }]);
     }
+
+    // Collect user emails
     const userEmails = posts.map(p => p.userEmail);
     const users = await User.find({ email: { $in: userEmails } }).select("email username");
 
@@ -362,6 +393,7 @@ app.get('/api/explore', async (req, res) => {
       userMap[u.email] = u.username;
     });
 
+    // Format posts including category
     const formattedPosts = posts.map(post => ({
       _id: post._id,
       title: post.title,
@@ -369,7 +401,8 @@ app.get('/api/explore', async (req, res) => {
       email: post.userEmail,
       username: userMap[post.userEmail] || post.userEmail.split("@")[0],
       images: post.images,
-      city: post.city || "Unknown"
+      city: post.city || "Unknown",
+      category: post.category || "Other" // <-- include category
     }));
 
     res.json(formattedPosts);
@@ -379,7 +412,6 @@ app.get('/api/explore', async (req, res) => {
   }
 });
 
-
 app.get("/api/user", async (req, res) => {
   try {
     const { email } = req.query;
@@ -387,17 +419,24 @@ app.get("/api/user", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json({
-  username: user.username,
-  name: user.name,
-  email: user.email,
-  bio: user.bio,
-  mobilenumber:user.mobileNumber,
-  profilePic: user.profilePic,
-  followers: user.followersList ? user.followersList.length : 0,
-  following: user.followingList ? user.followingList.length : 0,
-  followersList: user.followersList || [],
-  followingList: user.followingList || [],
-});
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      mobilenumber: user.mobileNumber,
+      mobileNumber: user.mobileNumber, // Add both for compatibility
+      gender: user.gender,              // ✅ ADD THIS
+      country: user.country,            // ✅ ADD THIS
+      state: user.state,                // ✅ ADD THIS
+      city: user.city,                  // ✅ ADD THIS
+      profilePic: user.profilePic,
+      followers: user.followersList ? user.followersList.length : 0,
+      following: user.followingList ? user.followingList.length : 0,
+      followersList: user.followersList || [],
+      followingList: user.followingList || [],
+      trustScore: user.trustScore,
+      ratingsReceived: user.ratingsReceived
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
@@ -529,6 +568,36 @@ app.delete("/api/admin/reports/:id", async (req, res) => {
     await Report.findByIdAndDelete(req.params.id);
     res.json({ message: "Report deleted" });
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+app.get("/api/admin/user-messages/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const messages = await Message.find({
+      $or: [{ sender: email }, { receiver: email }]
+    }).sort({ timestamp: 1 }); // sort by time ascending
+
+    // Add senderName and receiverName
+    const populatedMessages = await Promise.all(messages.map(async (msg) => {
+      const sender = await User.findOne({ email: msg.sender });
+      const receiver = await User.findOne({ email: msg.receiver });
+
+      return {
+        _id: msg._id,
+        sender: msg.sender,
+        senderName: sender?.name || msg.sender,
+        receiver: msg.receiver,
+        receiverName: receiver?.name || msg.receiver,
+        text: msg.text,
+        timestamp: msg.timestamp
+      };
+    }));
+
+    res.json(populatedMessages);
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 });

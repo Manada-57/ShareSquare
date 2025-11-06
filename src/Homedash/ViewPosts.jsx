@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./ViewPosts.css";
-
+import Header from "./Header.jsx";
 export default function ViewPosts() {
   const { email } = useParams();
   const [posts, setPosts] = useState([]);
@@ -136,6 +136,8 @@ const [endDate, setEndDate] = useState("");
   };
 
   return (
+    <div className="post-container">
+      <Header />
     <div className="posts-page">
       <h2>{email}'s Posts</h2>
       <div className="post-list">
@@ -147,7 +149,7 @@ const [endDate, setEndDate] = useState("");
           posts.map((p) => (
             <div
               key={p._id}
-              className="post-card"
+              className="post-card1"
               onClick={() => handlePostClick(p)}
             >
               <img src={p.images[0]} alt={p.title} />
@@ -248,6 +250,7 @@ const [endDate, setEndDate] = useState("");
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./PremiumSubscription.module.css";
 import { SiStripe } from "react-icons/si";
+import Header from "./Header.jsx";
 export default function PremiumSubscription() {
   const [planType, setPlanType] = useState("");
   const [days, setDays] = useState(1);
@@ -82,6 +83,8 @@ export default function PremiumSubscription() {
   };
 
   return (
+    <div className="post-container">
+      <Header />
     <div className={styles.container}>
       <h1>Subscription Plans</h1>
 
@@ -145,6 +148,7 @@ export default function PremiumSubscription() {
           <li>24/7 customer support for subscribers</li>
         </ul>
       </div>
+    </div>
     </div>
   );
 }
