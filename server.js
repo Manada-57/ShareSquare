@@ -713,8 +713,8 @@ app.post("/api/make-payment", async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-       success_url: `http://localhost:5000/payment-success?product=${encodeURIComponent(productName)}`,
-      cancel_url: 'http://localhost:5000/payment-cancel',
+       success_url: `https://sharesquare-y50q.onrender.com/payment-success?product=${encodeURIComponent(productName)}`,
+      cancel_url: 'https://sharesquare-y50q.onrender.com/payment-cancel',
 
     });
 
